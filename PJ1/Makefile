@@ -2,9 +2,9 @@ GCC = g++
 YACC = bison
 LEX = flex
 
-all: 			PJ1.exe
+all: 			PJ1
 
-PJ1yy.c: 	PJ1yy.y
+PJ1yy.c: 		PJ1yy.y
 			$(YACC) -d -o PJ1yy.c PJ1yy.y 
 
 PJ1ll.c: 		PJ1ll.l
@@ -16,8 +16,8 @@ PJ1yy.o:		PJ1yy.c 	PJ1.hpp
 PJ1ll.o:		PJ1ll.c PJ1.hpp
 			$(GCC) -c -o PJ1ll.o PJ1ll.c 
 
-PJ1.exe: 	PJ1yy.o PJ1ll.o
-			$(GCC) -o PJ1.exe  PJ1*.o  
+PJ1: 			PJ1yy.o PJ1ll.o
+			$(GCC) -o PJ1  PJ1*.o  
 
 clean: 
-			rm -f *.h *.o *.c *.exe
+			rm -f *.h *.o *.c PJ1
