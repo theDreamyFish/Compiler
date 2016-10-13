@@ -2,12 +2,12 @@ GCC = g++
 YACC = bison
 LEX = flex
 
-all: 			PJ1
+all: 			compiler
 
-PJ1yy.c: 		PJ1yy.y
-			$(YACC) -d -o PJ1yy.c PJ1yy.y 
+yacc.yy.c: 		yacc.yy.y
+			$(YACC) -d -o yacc.yy.c yacc.yy.y 
 
-PJ1ll.c: 		PJ1ll.l
+PJ1ll.c: 		PJ1.ll.l
 			$(LEX) -o PJ1ll.c PJ1ll.l 
 
 PJ1yy.o:		PJ1yy.c 	PJ1.hpp
@@ -16,8 +16,8 @@ PJ1yy.o:		PJ1yy.c 	PJ1.hpp
 PJ1ll.o:		PJ1ll.c PJ1.hpp
 			$(GCC) -c -o PJ1ll.o PJ1ll.c 
 
-PJ1: 			PJ1yy.o PJ1ll.o
+compiler: 		PJ1yy.o PJ1ll.o
 			$(GCC) -o PJ1  PJ1*.o  
 
 clean: 
-			rm -f *.h *.o *.c PJ1
+			rm -f *.h *.o *.c compiler

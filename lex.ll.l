@@ -1,5 +1,5 @@
 %{
-	#include "PJ1.hpp"
+	#include "compiler.hpp"
 	int line_num = 1;
 	int col_num = 1;
 %}

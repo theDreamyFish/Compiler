@@ -1,5 +1,5 @@
 %{
-	#include "PJ1.hpp"
+	#include "compiler.hpp"
 	int yylex(); 
 	void yyerror(const char *s);
 %}
