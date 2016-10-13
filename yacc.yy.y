@@ -16,7 +16,7 @@ void yyerror(const char *s){
 
 int main(int argc,char* argv[]){
     if(argc > 2){
-        cout << "PJ1 need a parameter to select input file.\n";
+        cout << "Too much parameters." << endl;
         return -1;
     }
     else if (argc == 2)
