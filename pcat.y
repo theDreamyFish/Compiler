@@ -5,7 +5,7 @@
 	#include <stdlib.h>
 	#include <stdarg.h>
 	#include <string.h>
-	#include "pcat.h"
+	#include "pcat.hpp"
 
 	/* prototypes */
 	int yylex(void);
@@ -20,8 +20,12 @@
 };
 
 %token <v_nptr> INTEGER REAL STRING ID TRUE FALSE
-%token ARRAY PROGRAMBEGIN BY DO ELSE ELSIF END FOR IF IN IS LOOP OF OUT PROCEDURE PROGRAM READ RECORD THEN TO TYPE VAR WHILE WRITE EXIT RETURN LBRACKET RBRACKET
-%left NOT AND OR DIV MOD ASSIGN LE GE NE '+' '-' '*' '/' '<' '>' '='
+%token ARRAY PROGRAMBEGIN BY DO ELSE ELSIF END FOR IF IN IS LOOP OF OUT PROCEDURE PROGRAM READ RECORD THEN TO TYPE VAR WHILE WRITE EXIT RETURN LBRACKET RBRACKET BACKSLASH
+
+%left <v_nptr> NOT AND OR DIV MOD ASSIGN LE GE NE '+' '-' '*' '/' '<' '>' '='
+
+%type <v_nptr> ARRAY PROGRAMBEGIN BY DO ELSE ELSIF END FOR IF IN IS LOOP OF OUT PROCEDURE PROGRAM READ RECORD THEN TO TYPE VAR WHILE WRITE EXIT RETURN LBRACKET RBRACKET
+%type <v_nptr> ':' ';' ',' '.' '(' ')' '[' ']' '{' '}' BACKSLASH
 
 %type <v_nptr> program
 %type <v_nptr> body declarations statements
@@ -50,14 +54,14 @@
 
 program:
 		PROGRAM IS body ';' {
-			$$ = combine("program", 1, $3);
+			$$ = combine("program", 4, $1, $2, $3, $4);
 			dfs($$, 0);
 		}
 	;
 
 body:
 		declarations PROGRAMBEGIN statements END {
-			$$ = combine("body", 2, $1, $3);
+			$$ = combine("body", 4, $1, $2, $3, $4);
 		}
 	;
 
@@ -81,13 +85,13 @@ statements:
 
 declaration:
 		VAR var_decls {
-			$$ = combine("declaration", 1, $2);
+			$$ = combine("declaration", 2, $1, $2);
 		}
 	|	TYPE type_decls {
-			$$ = combine("declaration", 1, $2);
+			$$ = combine("declaration", 2, $1, $2);
 		}
 	|	PROCEDURE procedure_decls {
-			$$ = combine("declaration", 1, $2);
+			$$ = combine("declaration", 2, $1, $2);
 		}
 	;
 
@@ -120,16 +124,16 @@ procedure_decls:
 
 var_decl:
 		ID ids ASSIGN expression ';' {
-			$$ = combine("var_decl", 3, $1, $2, $4);
+			$$ = combine("var_decl", 5, $1, $2, $3, $4, $5);
 		}
 	|	ID ids ':' type ASSIGN expression ';' {
-			$$ = combine("var_decl", 4, $1, $2, $4, $6);
+			$$ = combine("var_decl", 7, $1, $2, $3, $4, $5, $6, $7);
 		}
 	;
 
 ids:
 		ids ',' ID {
-			$$ = combine("ids", 2, $1, $3);
+			$$ = combine("ids", 3, $1, $2, $3);
 		}
 	|	{
 			$$ = new_node("empty id");
@@ -138,16 +142,16 @@ ids:
 
 type_decl:
 		ID IS type ';' {
-			$$ = combine("type_decl", 2, $1, $3);
+			$$ = combine("type_decl", 4, $1, $2, $3, $4);
 		}
 	;
 
 procedure_decl:
 		ID formal_params IS body ';' {
-			$$ = combine("procedure_decl", 3, $1, $2, $4);
+			$$ = combine("procedure_decl", 5, $1, $2, $3, $4, $5);
 		}
 	|	ID formal_params ':' type IS body ';' {
-			$$ = combine("procedure_decl", 4, $1, $2, $4, $6);
+			$$ = combine("procedure_decl", 7, $1, $2, $3, $4, $5, $6, $7);
 		}
 	;
 
@@ -156,10 +160,10 @@ type:
 			$$ = combine("type", 1, $1);
 		}
 	|	ARRAY OF type {
-			$$ = combine("type", 1, $3);
+			$$ = combine("type", 3, $1, $2, $3);
 		}
 	|	RECORD component components END  {
-			$$ = combine("type", 2, $2, $3);
+			$$ = combine("type", 4, $1, $2, $3, $4);
 		}
 	;
 
@@ -174,13 +178,13 @@ components:
 
 component:
 		ID ':' type ';' {
-			$$ = combine("component", 2, $1, $3);
+			$$ = combine("component", 4, $1, $2, $3, $4);
 		}
 	;
 
 formal_params:
 		'(' fp_section fp_sections ')' {
-			$$ = combine("formal_params", 2, $2, $3);
+			$$ = combine("formal_params", 4, $1, $2, $3, $4);
 		}
 	|	'(' ')' {
 			/* do nothing [FIXME not sure]*/
@@ -188,7 +192,7 @@ formal_params:
 
 fp_sections:
 		fp_sections ';' fp_section {
-			$$ = combine("fp_sections", 2, $1, $3);
+			$$ = combine("fp_sections", 3, $1, $2, $3);
 		}
 	|	{
 			$$ = new_node("empty fp_section");
@@ -197,53 +201,53 @@ fp_sections:
 
 fp_section:
 		ID ids ':' type {
-			$$ = combine("fp_section", 3, $1, $2, $4);
+			$$ = combine("fp_section", 4, $1, $2, $3, $4);
 		}
 
 statement:
 		lvalue ASSIGN expression ';' {
-			$$ = combine("statement", 2, $1, $3);
+			$$ = combine("statement", 4, $1, $2, $3, $4);
 		}
 	|	ID actual_params ';' {
-			$$ = combine("statement", 2, $1, $2);
+			$$ = combine("statement", 3, $1, $2, $3);
 		}
 	|	READ '(' lvalue lvalues ')' ';' {
-			$$ = combine("statement", 2, $3, $4);
+			$$ = combine("statement", 6, $1, $2, $3, $4, $5, $6);
 		}
 	|	WRITE write_params ';' {
-			$$ = combine("statement", 1, $2);
+			$$ = combine("statement", 3, $1, $2, $3);
 		}
 	|	IF expression THEN statements elsifs END ';' {
-			$$ = combine("statement", 3, $2, $4, $5);
+			$$ = combine("statement", 7, $1, $2, $3, $4, $5, $6, $7);
 		}
 	|	IF expression THEN statements elsifs ELSE statements END ';' {
-			$$ = combine("statement", 4, $2, $4, $5, $7);
+			$$ = combine("statement", 9, $1, $2, $3, $4, $5, $6, $7, $8, $9);
 		}
 	|	WHILE expression DO statements END ';' {
-			$$ = combine("statement", 2, $2, $4);
+			$$ = combine("statement", 6, $1, $2, $3, $4, $5, $6);
 		}
 	|	LOOP statements END ';' {
-			$$ = combine("statement", 1, $2);
+			$$ = combine("statement", 4, $1, $2, $3, $4);
 		}
 	|	FOR ID ASSIGN expression TO expression DO statements END ';' {
-			$$ = combine("statement", 4, $2, $4, $6, $8);
+			$$ = combine("statement", 10, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
 		}
 	|	FOR ID ASSIGN expression TO expression BY expression DO statements END ';' {
-			$$ = combine("statement", 5, $2, $4, $6, $8, $10);
+			$$ = combine("statement", 10, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);
 		}
 	|	EXIT ';' {
-			$$ = new_node("exit");
+			$$ = combine("statement", 2, $1, $2);
 		}
 	|	RETURN ';' {
-			$$ = new_node("return");
+			$$ = combine("statement", 2, $1, $2);
 		}
 	|	RETURN expression ';' {
-			$$ = combine("return value", 1, $2);
+			$$ = combine("statement", 3, $1, $2, $3);
 		}
 
 lvalues:
 		lvalues ',' lvalue {
-			$$ = combine("lvalues", 2, $1, $3);
+			$$ = combine("lvalues", 3, $1, $2, $3);
 		}
 	|	{
 			$$ = new_node("empty lvalues");
@@ -261,13 +265,13 @@ elsifs:
 
 elsif:
 		ELSIF expression THEN statements {
-			$$ = combine("elsif", 2, $2, $4);
+			$$ = combine("elsif", 4, $1, $2, $3, $4);
 		}
 	;
 
 write_params:
 		'(' write_expr write_exprs ')' {
-			$$ = combine("write_params", 2, $2, $3);
+			$$ = combine("write_params", 4, $1, $2, $3, $4);
 		}
 	|	'(' ')' {
 			/* do nothing [FIXME not sure]*/
@@ -276,7 +280,7 @@ write_params:
 
 write_exprs:
 		write_exprs ',' write_expr {
-			$$ = combine("write_exprs", 2, $1, $3);
+			$$ = combine("write_exprs", 3, $1, $2, $3);
 		}
 	|	{
 			$$ = new_node("empty write_expr");
@@ -300,7 +304,7 @@ expression:
 			$$ = combine("expression", 1, $1);
 		}
 	|	'(' expression ')' {
-			$$ = combine("expression", 1, $2);
+			$$ = combine("expression", 3, $1, $2, $3);
 		}
 	|	unary_op expression {
 			$$ = combine("expression", 2, $1, $2);
@@ -324,25 +328,25 @@ lvalue:
 			$$ = combine("lvalue", 1, $1);
 		}
 	|	lvalue '[' expression ']' {
-			$$ = combine("lvalue", 2, $1, $3);
+			$$ = combine("lvalue", 4, $1, $2, $3, $4);
 		}
 	|	lvalue '.' ID {
-			$$ = combine("lvalue", 2, $1, $3);
+			$$ = combine("lvalue", 3, $1, $2, $3);
 		}
 	;
 
 actual_params:
 		'(' expression expressions ')' {
-			$$ = combine("actual_params", 2, $2, $3);
+			$$ = combine("actual_params", 4, $1, $2, $3, $4);
 		}
 	|	'('	')' {
-			/* do nothing */
+			$$ = combine("actual_params", 2, $1, $2);
 		}
 	;
 
 expressions:
 		expressions ',' expression {
-			$$ = combine("expressions", 2, $1, $3);
+			$$ = combine("expressions", 3, $1, $2, $3);
 		}
 	|	{
 			$$ = new_node("empty expression");
@@ -351,13 +355,13 @@ expressions:
 
 comp_values:
 		'{' ID ASSIGN expression assign_expression_to_id_s '}' {
-			$$ = combine("comp_values", 3, $2, $4, $5);
+			$$ = combine("comp_values", 6, $1, $2, $3, $4, $5, $6);
 		}
 	;
 
 assign_expression_to_id_s:
 		assign_expression_to_id_s ';' ID ASSIGN expression {
-			$$ = combine("assign_expression_to_id_s", 3, $1, $3, $5);
+			$$ = combine("assign_expression_to_id_s", 5, $1, $2, $3, $4, $5);
 		}
 	|	{
 			$$ = new_node("empty assign_expression_to_id");
@@ -366,13 +370,13 @@ assign_expression_to_id_s:
 
 array_values:
 		LBRACKET array_value comma_sep_array_values RBRACKET {
-			$$ = combine("array_values", 2, $2, $3);
+			$$ = combine("array_values", 4, $1, $2, $3, $4);
 		}
 	;
 
 comma_sep_array_values:
 		comma_sep_array_values ',' array_value {
-			$$ = combine("comma_sep_array_values", 2, $1, $3);
+			$$ = combine("comma_sep_array_values", 3, $1, $2, $3);
 		}
 	|	{
 			$$ = new_node("empty comma_sep_array_value");
@@ -384,7 +388,7 @@ array_value:
 			$$ = combine("array_value", 1, $1);
 		}
 	|	expression OF expression {
-			$$ = combine("array_value", 2, $1, $3);
+			$$ = combine("array_value", 3, $1, $2, $3);
 		}
 
 number:
@@ -398,58 +402,58 @@ number:
 
 unary_op:
 		'+' {
-			$$ = new_node("unary_op +");
+			$$ = combine("unary_op", 1, $1);
 		}
 	|	'-' {
-			$$ = new_node("unary_op -");
+			$$ = combine("unary_op", 1, $1);
 		}
 	|	NOT {
-			$$ = new_node("unary_op NOT");
+			$$ = combine("unary_op", 1, $1);
 		}
 	;
 
 binary_op:
 		'+' {
-			$$ = new_node("binary_op +");
+			$$ = combine("binary_op", 1, $1);
 		}
 	|	'-' {
-			$$ = new_node("binary_op -");
+			$$ = combine("binary_op", 1, $1);
 		}
 	|	'*' {
-			$$ = new_node("binary_op *");
+			$$ = combine("binary_op", 1, $1);
 		}
 	|	'/' {
-			$$ = new_node("binary_op /");
+			$$ = combine("binary_op", 1, $1);
 		}
 	|	DIV	{
-			$$ = new_node("binary_op DIV");
+			$$ = combine("binary_op", 1, $1);
 		}
 	|	MOD {
-			$$ = new_node("binary_op MOD");
+			$$ = combine("binary_op", 1, $1);
 		}
 	|	OR {
-			$$ = new_node("binary_op OR");
+			$$ = combine("binary_op", 1, $1);
 		}
 	|	AND {
-			$$ = new_node("binary_op AND");
+			$$ = combine("binary_op", 1, $1);
 		}
 	|	'>' {
-			$$ = new_node("binary_op >");
+			$$ = combine("binary_op", 1, $1);
 		}
 	|	'<' {
-			$$ = new_node("binary_op <");
+			$$ = combine("binary_op", 1, $1);
 		}
 	|	'=' {
-			$$ = new_node("binary_op =");
+			$$ = combine("binary_op", 1, $1);
 		}
 	|	GE	{
-			$$ = new_node("binary_op >=");
+			$$ = combine("binary_op", 1, $1);
 		}
 	|	LE	{
-			$$ = new_node("binary_op <=");
+			$$ = combine("binary_op", 1, $1);
 		}
 	|	NE {
-			$$ = new_node("binary_op <>");
+			$$ = combine("binary_op", 1, $1);
 		}
 	;
 %%
@@ -503,10 +507,16 @@ void dfs(nodeType *now, int depth) {
 
 }
 
-int main() {
-	#if YYDEBUG
-		yydebug = 1;
-	#endif
-	yyparse();
-	return 0;
+int main(int argc,char* argv[]){
+#if YYDEBUG
+	yydebug = 1;
+#endif
+  if(argc > 2){
+    printf("Too much parameters.\n");;
+    return -1;
+  }
+  else if (argc == 2)
+    freopen(argv[1],"r",stdin);
+  yyparse();
+  return 0;
 }

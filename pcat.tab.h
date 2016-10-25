@@ -73,15 +73,16 @@
      RETURN = 289,
      LBRACKET = 290,
      RBRACKET = 291,
-     NE = 292,
-     GE = 293,
-     LE = 294,
-     ASSIGN = 295,
-     MOD = 296,
-     DIV = 297,
-     OR = 298,
-     AND = 299,
-     NOT = 300
+     BACKSLASH = 292,
+     NE = 293,
+     GE = 294,
+     LE = 295,
+     ASSIGN = 296,
+     MOD = 297,
+     DIV = 298,
+     OR = 299,
+     AND = 300,
+     NOT = 301
    };
 #endif
 /* Tokens.  */
@@ -119,15 +120,16 @@
 #define RETURN 289
 #define LBRACKET 290
 #define RBRACKET 291
-#define NE 292
-#define GE 293
-#define LE 294
-#define ASSIGN 295
-#define MOD 296
-#define DIV 297
-#define OR 298
-#define AND 299
-#define NOT 300
+#define BACKSLASH 292
+#define NE 293
+#define GE 294
+#define LE 295
+#define ASSIGN 296
+#define MOD 297
+#define DIV 298
+#define OR 299
+#define AND 300
+#define NOT 301
 
 
 
@@ -139,7 +141,7 @@ typedef union YYSTYPE
 	nodeType *v_nptr;
 }
 /* Line 1529 of yacc.c.  */
-#line 143 "pcat.tab.h"
+#line 145 "pcat.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

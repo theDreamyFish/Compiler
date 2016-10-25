@@ -10,6 +10,7 @@ typedef struct {
 		float v_real;
 		char *v_string;
 		char *v_id; // this may be changed to integer value; (after constructing an id table)
+		int v_null;
 	};
 } terminalNodeType;
 
