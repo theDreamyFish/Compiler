@@ -1,5 +1,5 @@
 %{
-	#define YYDEBUG 1
+	#define YYDEBUG 0
 
 	#include <stdio.h>
 	#include <stdlib.h>
@@ -67,19 +67,19 @@ body:
 
 declarations:
 		declarations declaration {
-			$$ = combine("declarations", 2, $1, $2);
+			$$ = combine("multi declaration", 2, $1, $2);
 		}
 	|	{
-			$$ = new_node("empty declaration");
+			$$ = new_node("empty declarations");
 		} /* empty */
 	;
 
 statements:
 		statements statement {
-			$$ = combine("statements", 2, $1, $2);
+			$$ = combine("multi statement", 2, $1, $2);
 		}
 	|	{
-			$$ = new_node("empty statement");
+			$$ = new_node("empty statements");
 		} /* empty */
 	;
 
@@ -97,28 +97,28 @@ declaration:
 
 var_decls:
 		var_decls var_decl {
-			$$ = combine("var_decls", 2, $1, $2);
+			$$ = combine("multi var_decl", 2, $1, $2);
 		}
 	|	{
-			$$ = new_node("empty var_decl");
+			$$ = new_node("empty var_decls");
 		} /* empty */
 	;
 
 type_decls:
 		type_decls type_decl {
-			$$ = combine("type_decls", 2, $1, $2);
+			$$ = combine("multi type_decl", 2, $1, $2);
 		}
 	|	{
-			$$ = new_node("empty type_decl");
+			$$ = new_node("empty type_decls");
 		}/* empty */
 	;
 
 procedure_decls:
 		procedure_decls procedure_decl {
-			$$ = combine("type_decls", 2, $1, $2);
+			$$ = combine("multi type_decl", 2, $1, $2);
 		}
 	|	{
-			$$ = new_node("empty procedure_decl");
+			$$ = new_node("empty procedure_decls");
 		}/* empty */
 	;
 
@@ -133,10 +133,10 @@ var_decl:
 
 ids:
 		ids ',' ID {
-			$$ = combine("ids", 3, $1, $2, $3);
+			$$ = combine("multi id", 3, $1, $2, $3);
 		}
 	|	{
-			$$ = new_node("empty id");
+			$$ = new_node("empty ids");
 		} /* empty */
 	;
 
@@ -169,10 +169,10 @@ type:
 
 components:
 		components component {
-			$$ = combine("components", 2, $1, $2);
+			$$ = combine("multi component", 2, $1, $2);
 		}
 	|	{
-			$$ = new_node("empty component");
+			$$ = new_node("empty components");
 		}/* empty */
 	;
 
@@ -187,15 +187,15 @@ formal_params:
 			$$ = combine("formal_params", 4, $1, $2, $3, $4);
 		}
 	|	'(' ')' {
-			/* do nothing [FIXME not sure]*/
+			$$ = combine("formal_params", 2, $1, $2);
 		}
 
 fp_sections:
 		fp_sections ';' fp_section {
-			$$ = combine("fp_sections", 3, $1, $2, $3);
+			$$ = combine("multi fp_section", 3, $1, $2, $3);
 		}
 	|	{
-			$$ = new_node("empty fp_section");
+			$$ = new_node("empty fp_sections");
 		}/* empty */
 	;
 
@@ -247,7 +247,7 @@ statement:
 
 lvalues:
 		lvalues ',' lvalue {
-			$$ = combine("lvalues", 3, $1, $2, $3);
+			$$ = combine("multi lvalue", 3, $1, $2, $3);
 		}
 	|	{
 			$$ = new_node("empty lvalues");
@@ -256,7 +256,7 @@ lvalues:
 
 elsifs:
 		elsifs elsif {
-			$$ = combine("elsifs", 2, $1, $2);
+			$$ = combine("multi elsif", 2, $1, $2);
 		}
 	|	{
 			$$ = new_node("empty elsifs");
@@ -274,16 +274,16 @@ write_params:
 			$$ = combine("write_params", 4, $1, $2, $3, $4);
 		}
 	|	'(' ')' {
-			/* do nothing [FIXME not sure]*/
+			$$ = combine("write_params", 2, $1, $2);
 		}
 	;
 
 write_exprs:
 		write_exprs ',' write_expr {
-			$$ = combine("write_exprs", 3, $1, $2, $3);
+			$$ = combine("multi write_expr", 3, $1, $2, $3);
 		}
 	|	{
-			$$ = new_node("empty write_expr");
+			$$ = new_node("empty write_exprs");
 		}/* empty */
 	;
 
@@ -339,17 +339,17 @@ actual_params:
 		'(' expression expressions ')' {
 			$$ = combine("actual_params", 4, $1, $2, $3, $4);
 		}
-	|	'('	')' {
+	|	'(' ')' {
 			$$ = combine("actual_params", 2, $1, $2);
 		}
 	;
 
 expressions:
 		expressions ',' expression {
-			$$ = combine("expressions", 3, $1, $2, $3);
+			$$ = combine("multi expression", 3, $1, $2, $3);
 		}
 	|	{
-			$$ = new_node("empty expression");
+			$$ = new_node("empty expressions");
 		}/* empty */
 	;
 
@@ -361,10 +361,10 @@ comp_values:
 
 assign_expression_to_id_s:
 		assign_expression_to_id_s ';' ID ASSIGN expression {
-			$$ = combine("assign_expression_to_id_s", 5, $1, $2, $3, $4, $5);
+			$$ = combine("multi assign_expression_to_id", 5, $1, $2, $3, $4, $5);
 		}
 	|	{
-			$$ = new_node("empty assign_expression_to_id");
+			$$ = new_node("empty assign_expression_to_id_s");
 		}/* empty */
 	;
 
@@ -376,10 +376,10 @@ array_values:
 
 comma_sep_array_values:
 		comma_sep_array_values ',' array_value {
-			$$ = combine("comma_sep_array_values", 3, $1, $2, $3);
+			$$ = combine("multi comma_sep_array_value", 3, $1, $2, $3);
 		}
 	|	{
-			$$ = new_node("empty comma_sep_array_value");
+			$$ = new_node("empty comma_sep_array_values");
 		}/* empty */
 	;
 
@@ -488,21 +488,45 @@ void yyerror(char *s) {
 	fprintf(stdout, "%s\n", s);
 }
 
+int printable(nodeType *node) {
+	if (node->type == typeTerminal) {
+		if (strstr(node->t.label, "empty") || strstr(node->t.label, "multi")) {
+			return 0;
+		} else {
+			return 1;
+		}
+	} else {
+		if (strstr(node->nt.label, "empty") || strstr(node->nt.label, "multi")) {
+			return 0;
+		} else {
+			return 1;
+		}
+	}
+}
+
 void dfs(nodeType *now, int depth) {
 	int i;
-	for (i = 0; i < depth-1; ++i) {
-		fprintf(stdout, "|   ");
-	}
-	if (depth >= 1) {
-		fprintf(stdout, "|---");
-	}
-	if (now->type==typeTerminal) {
-		fprintf(stdout, "< %s >\n", now->t.label);
-		return;
-	}
-	fprintf(stdout, "%s\n", now->nt.label);
-	for (i = 0; i < now->nt.nops; ++i) {
-		dfs(now->nt.op[i], depth + 1);
+	if (printable(now)) {
+		for (i = 0; i < depth-1; ++i) {
+			fprintf(stdout, "|   ");
+		}
+		if (depth >= 1) {
+			fprintf(stdout, "|---");
+		}
+		if (now->type==typeTerminal) {
+			fprintf(stdout, "< %s >\n", now->t.label);
+			return;
+		}
+		fprintf(stdout, "%s\n", now->nt.label);
+		for (i = 0; i < now->nt.nops; ++i) {
+			dfs(now->nt.op[i], depth + 1);
+		}
+	} else {
+		if (now->type==typeNonterminal) {
+			for (i = 0; i < now->nt.nops; ++i) {
+				dfs(now->nt.op[i], depth);
+			}
+		}
 	}
 
 }
