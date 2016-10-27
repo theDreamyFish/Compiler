@@ -1,10 +1,6 @@
 %{
 	#define YYDEBUG 0
 
-	#include <stdio.h>
-	#include <stdlib.h>
-	#include <stdarg.h>
-	#include <string.h>
 	#include "pcat.hpp"
 
 	/* prototypes */
@@ -20,12 +16,13 @@
 };
 
 %token <v_nptr> INTEGER REAL STRING ID TRUE FALSE
-%token ARRAY PROGRAMBEGIN BY DO ELSE ELSIF END FOR IF IN IS LOOP OF OUT PROCEDURE PROGRAM READ RECORD THEN TO TYPE VAR WHILE WRITE EXIT RETURN LBRACKET RBRACKET BACKSLASH
+%token <v_nptr> ARRAY PROGRAMBEGIN BY DO ELSE ELSIF END FOR IF IN IS LOOP OF OUT PROCEDURE PROGRAM READ RECORD THEN TO TYPE VAR WHILE WRITE EXIT RETURN LBRACKET RBRACKET
+%token <v_nptr> ':' ';' ',' '.' '(' ')' '[' ']' '{' '}' BACKSLASH ASSIGN NOT LE GE NE '<' '>' '=' OR '+' '-' '*' '/' MOD DIV AND
 
-%left <v_nptr> NOT AND OR DIV MOD ASSIGN LE GE NE '+' '-' '*' '/' '<' '>' '='
-
-%type <v_nptr> ARRAY PROGRAMBEGIN BY DO ELSE ELSIF END FOR IF IN IS LOOP OF OUT PROCEDURE PROGRAM READ RECORD THEN TO TYPE VAR WHILE WRITE EXIT RETURN LBRACKET RBRACKET
-%type <v_nptr> ':' ';' ',' '.' '(' ')' '[' ']' '{' '}' BACKSLASH
+%left NOT LE GE NE '<' '>' '='
+%left OR '+' '-'
+%left '*' '/' MOD DIV AND
+%nonassoc UNARY
 
 %type <v_nptr> program
 %type <v_nptr> body declarations statements
@@ -47,8 +44,6 @@
 %type <v_nptr> array_values comma_sep_array_values
 %type <v_nptr> array_value
 %type <v_nptr> number
-%type <v_nptr> unary_op
-%type <v_nptr> binary_op
 
 %%
 
@@ -306,10 +301,55 @@ expression:
 	|	'(' expression ')' {
 			$$ = combine("expression", 3, $1, $2, $3);
 		}
-	|	unary_op expression {
+	|	'+' expression %prec UNARY{
 			$$ = combine("expression", 2, $1, $2);
 		}
-	|	expression binary_op expression {
+	|	'-' expression %prec UNARY{
+			$$ = combine("expression", 2, $1, $2);
+		}
+	|	NOT expression %prec UNARY{
+			$$ = combine("expression", 2, $1, $2);
+		}
+	|	expression '*' expression{
+			$$ = combine("expression", 3, $1, $2, $3);
+		}
+	|	expression '/' expression{
+			$$ = combine("expression", 3, $1, $2, $3);
+		}
+	|	expression AND expression{
+			$$ = combine("expression", 3, $1, $2, $3);
+		}
+	|	expression DIV expression{
+			$$ = combine("expression", 3, $1, $2, $3);
+		}
+	|	expression MOD expression{
+			$$ = combine("expression", 3, $1, $2, $3);
+		}
+	|	expression '+' expression{
+			$$ = combine("expression", 3, $1, $2, $3);
+		}
+	|	expression '-' expression{
+			$$ = combine("expression", 3, $1, $2, $3);
+		}
+	|	expression OR expression{
+			$$ = combine("expression", 3, $1, $2, $3);
+		}
+	|	expression '>' expression{
+			$$ = combine("expression", 3, $1, $2, $3);
+		}
+	|	expression '<' expression{
+			$$ = combine("expression", 3, $1, $2, $3);
+		}
+	|	expression '=' expression{
+			$$ = combine("expression", 3, $1, $2, $3);
+		}
+	|	expression GE expression{
+			$$ = combine("expression", 3, $1, $2, $3);
+		}
+	|	expression LE expression{
+			$$ = combine("expression", 3, $1, $2, $3);
+		}
+	|	expression NE expression{
 			$$ = combine("expression", 3, $1, $2, $3);
 		}
 	|	ID actual_params {
@@ -400,62 +440,6 @@ number:
 		}
 	;
 
-unary_op:
-		'+' {
-			$$ = combine("unary_op", 1, $1);
-		}
-	|	'-' {
-			$$ = combine("unary_op", 1, $1);
-		}
-	|	NOT {
-			$$ = combine("unary_op", 1, $1);
-		}
-	;
-
-binary_op:
-		'+' {
-			$$ = combine("binary_op", 1, $1);
-		}
-	|	'-' {
-			$$ = combine("binary_op", 1, $1);
-		}
-	|	'*' {
-			$$ = combine("binary_op", 1, $1);
-		}
-	|	'/' {
-			$$ = combine("binary_op", 1, $1);
-		}
-	|	DIV	{
-			$$ = combine("binary_op", 1, $1);
-		}
-	|	MOD {
-			$$ = combine("binary_op", 1, $1);
-		}
-	|	OR {
-			$$ = combine("binary_op", 1, $1);
-		}
-	|	AND {
-			$$ = combine("binary_op", 1, $1);
-		}
-	|	'>' {
-			$$ = combine("binary_op", 1, $1);
-		}
-	|	'<' {
-			$$ = combine("binary_op", 1, $1);
-		}
-	|	'=' {
-			$$ = combine("binary_op", 1, $1);
-		}
-	|	GE	{
-			$$ = combine("binary_op", 1, $1);
-		}
-	|	LE	{
-			$$ = combine("binary_op", 1, $1);
-		}
-	|	NE {
-			$$ = combine("binary_op", 1, $1);
-		}
-	;
 %%
 
 nodeType *combine(char *label, int nops, ...) {
