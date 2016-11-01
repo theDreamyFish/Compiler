@@ -5,9 +5,12 @@
 
 	/* prototypes */
 	int yylex(void);
+	nodeType *head;
 	nodeType *combine(char *description, int nops, ...);
 	nodeType *new_node(char *description);
-	void dfs(nodeType *now, int depth);
+	nodeType *node_copy(nodeType *node);
+	nodeType* dfs(nodeType *now, int depth);
+	void dfs_print(nodeType *now, int depth);
 	void yyerror(char *str);
 %}
 
@@ -50,7 +53,8 @@
 program:
 		PROGRAM IS body ';' {
 			$$ = combine("program", 4, $1, $2, $3, $4);
-			dfs($$, 0);
+			head=dfs($$,0);
+			dfs_print(head, 0);
 		}
 	;
 
@@ -467,6 +471,21 @@ nodeType *new_node(char *label) {
 	p->t.label = strdup(label);
 	return p;
 }
+nodeType *node_copy(nodeType *node) {
+	if(node->type==typeTerminal)
+		return node;
+
+	nodeType *p;
+	if ( (p=malloc( sizeof(nodeType)+(node->nt.nops-1)*sizeof(nodeType *) ) ) == NULL)
+		yyerror("out of memory");
+	p->type = node->type;
+	p->nt.label = strdup(node->nt.label);
+	p->nt.nops = node->nt.nops;
+
+	for (int i = 0; i < node->nt.nops; i++)
+		p->nt.op[i] = node->nt.op[i];
+	return p;
+}
 
 void yyerror(char *s) {
 	fprintf(stdout, "%s\n", s);
@@ -488,9 +507,53 @@ int printable(nodeType *node) {
 	}
 }
 
-void dfs(nodeType *now, int depth) {
+nodeType* dfs(nodeType *now, int depth) {
 	int i;
 	if (printable(now)) {
+		if (now->type==typeTerminal) 
+			return now;
+		int tot=0;
+		for (i = 0; i < now->nt.nops; ++i) {
+			now->nt.op[i]=dfs(now->nt.op[i], depth + 1);
+			tot+=now->nt.op[i]->nt.nops;
+		}
+		nodeType *temp=node_copy(now);
+		return temp;
+	} else {
+		if (now->type==typeNonterminal) {
+			for (i = 0; i < now->nt.nops; ++i) {
+				now->nt.op[i]=dfs(now->nt.op[i], depth+1);
+				if(!printable(now->nt.op[i])&&strcmp(now->nt.op[i]->nt.label,now->nt.label)==0){
+					//the child is not printable and the node is ax the same type as its child
+					nodeType *p;
+					if ( (p=malloc(sizeof(nodeType)+(now->nt.nops+now->nt.op[i]->nt.nops-1)*sizeof(nodeType *))) == NULL)
+						yyerror("out of memory");
+					p->type = typeNonterminal;
+					p->nt.label = strdup(now->nt.label);
+					p->nt.nops = now->nt.nops+now->nt.op[i]->nt.nops-1;
+					int j=0;
+					for (j = 0; j < now->nt.op[i]->nt.nops; j++)
+						p->nt.op[j] = now->nt.op[i]->nt.op[j];
+					//paste the ops of the node's children's children
+
+					for (j = now->nt.op[i]->nt.nops; j < now->nt.nops+now->nt.op[i]->nt.nops-1; j++)
+						p->nt.op[j] = now->nt.op[j-now->nt.op[i]->nt.nops+1];
+					//paste the ops of the node's own children
+
+					now=p;
+					i+=now->nt.op[i]->nt.nops-1;
+					//skip the children's children
+				}
+
+			}
+		}
+		return now;
+	}
+
+}
+void dfs_print(nodeType *now, int depth) {
+	int i;
+{
 		for (i = 0; i < depth-1; ++i) {
 			fprintf(stdout, "|   ");
 		}
@@ -503,16 +566,9 @@ void dfs(nodeType *now, int depth) {
 		}
 		fprintf(stdout, "%s\n", now->nt.label);
 		for (i = 0; i < now->nt.nops; ++i) {
-			dfs(now->nt.op[i], depth + 1);
-		}
-	} else {
-		if (now->type==typeNonterminal) {
-			for (i = 0; i < now->nt.nops; ++i) {
-				dfs(now->nt.op[i], depth);
-			}
+			dfs_print(now->nt.op[i], depth + 1);
 		}
 	}
-
 }
 
 int main(int argc,char* argv[]){
