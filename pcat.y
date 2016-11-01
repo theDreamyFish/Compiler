@@ -56,6 +56,12 @@ program:
 			head=dfs($$,0);
 			dfs_print(head, 0);
 		}
+	| 	error {
+			$$ = new_node("error programe");
+			yyerror("syntax error in program");
+			head=dfs($$,0);
+			dfs_print(head, 0);
+		}
 	;
 
 body:
@@ -129,6 +135,7 @@ var_decl:
 			$$ = combine("var_decl", 7, $1, $2, $3, $4, $5, $6, $7);
 		}
 	|	error ';' {
+			$$ = new_node("error var_decl");
 			yyerror("syntax error in var declaration")
 		}
 	;
