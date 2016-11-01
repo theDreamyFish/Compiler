@@ -23,8 +23,10 @@ typedef struct {
 typedef struct {
 	char *label;
 	int nops;
+
 	struct nodeTypeTag *op[1];
 } nonterminalNodeType;
+
 
 typedef struct nodeTypeTag {
 	nodeEnum type;
