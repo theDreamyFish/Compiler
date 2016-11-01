@@ -51,7 +51,7 @@
 %%
 
 program:
-		PROGRAM IS body ';' {
+		PROGRAM IS body ';'{
 			$$ = combine("program", 4, $1, $2, $3, $4);
 			head=dfs($$,0);
 			dfs_print(head, 0);
@@ -128,6 +128,9 @@ var_decl:
 	|	ID ids ':' type ASSIGN expression ';' {
 			$$ = combine("var_decl", 7, $1, $2, $3, $4, $5, $6, $7);
 		}
+	|	error ';' {
+			yyerror("syntax error in var declaration")
+		}
 	;
 
 ids:
@@ -142,6 +145,9 @@ ids:
 type_decl:
 		ID IS type ';' {
 			$$ = combine("type_decl", 4, $1, $2, $3, $4);
+		}
+	|	error ';'{
+			yyerror("syntax error in type declaration");
 		}
 	;
 
@@ -242,6 +248,9 @@ statement:
 		}
 	|	RETURN expression ';' {
 			$$ = combine("statement", 3, $1, $2, $3);
+		}
+	|	error ';' {
+			yyerror(" error in statements");
 		}
 
 lvalues:
@@ -488,7 +497,7 @@ nodeType *node_copy(nodeType *node) {
 }
 
 void yyerror(char *s) {
-	fprintf(stdout, "%s\n", s);
+	fprintf(stdout, "line %d col %d: %s\n", line_num, col_num, s);
 }
 
 int printable(nodeType *node) {

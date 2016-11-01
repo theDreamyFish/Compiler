@@ -1,0 +1,5030 @@
+Terminals which are not used
+
+   TRUE
+   FALSE
+   IN
+   OUT
+   BACKSLASH
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: PROGRAM IS body ';'
+
+    2 body: declarations PROGRAMBEGIN statements END
+
+    3 declarations: declarations declaration
+    4             | /* empty */
+
+    5 statements: statements statement
+    6           | /* empty */
+
+    7 declaration: VAR var_decls
+    8            | TYPE type_decls
+    9            | PROCEDURE procedure_decls
+
+   10 var_decls: var_decls var_decl
+   11          | /* empty */
+
+   12 type_decls: type_decls type_decl
+   13           | /* empty */
+
+   14 procedure_decls: procedure_decls procedure_decl
+   15                | /* empty */
+
+   16 var_decl: ID ids ASSIGN expression ';'
+   17         | ID ids ':' type ASSIGN expression ';'
+   18         | error ';'
+
+   19 ids: ids ',' ID
+   20    | /* empty */
+
+   21 type_decl: ID IS type ';'
+   22          | error ';'
+
+   23 procedure_decl: ID formal_params IS body ';'
+   24               | ID formal_params ':' type IS body ';'
+
+   25 type: ID
+   26     | ARRAY OF type
+   27     | RECORD component components END
+
+   28 components: components component
+   29           | /* empty */
+
+   30 component: ID ':' type ';'
+
+   31 formal_params: '(' fp_section fp_sections ')'
+   32              | '(' ')'
+
+   33 fp_sections: fp_sections ';' fp_section
+   34            | /* empty */
+
+   35 fp_section: ID ids ':' type
+
+   36 statement: lvalue ASSIGN expression ';'
+   37          | ID actual_params ';'
+   38          | READ '(' lvalue lvalues ')' ';'
+   39          | WRITE write_params ';'
+   40          | IF expression THEN statements elsifs END ';'
+   41          | IF expression THEN statements elsifs ELSE statements END ';'
+   42          | WHILE expression DO statements END ';'
+   43          | LOOP statements END ';'
+   44          | FOR ID ASSIGN expression TO expression DO statements END ';'
+   45          | FOR ID ASSIGN expression TO expression BY expression DO statements END ';'
+   46          | EXIT ';'
+   47          | RETURN ';'
+   48          | RETURN expression ';'
+   49          | error ';'
+
+   50 lvalues: lvalues ',' lvalue
+   51        | /* empty */
+
+   52 elsifs: elsifs elsif
+   53       | /* empty */
+
+   54 elsif: ELSIF expression THEN statements
+
+   55 write_params: '(' write_expr write_exprs ')'
+   56             | '(' ')'
+
+   57 write_exprs: write_exprs ',' write_expr
+   58            | /* empty */
+
+   59 write_expr: STRING
+   60           | expression
+
+   61 expression: number
+   62           | lvalue
+   63           | '(' expression ')'
+   64           | '+' expression
+   65           | '-' expression
+   66           | NOT expression
+   67           | expression '*' expression
+   68           | expression '/' expression
+   69           | expression AND expression
+   70           | expression DIV expression
+   71           | expression MOD expression
+   72           | expression '+' expression
+   73           | expression '-' expression
+   74           | expression OR expression
+   75           | expression '>' expression
+   76           | expression '<' expression
+   77           | expression '=' expression
+   78           | expression GE expression
+   79           | expression LE expression
+   80           | expression NE expression
+   81           | ID actual_params
+   82           | ID comp_values
+   83           | ID array_values
+
+   84 lvalue: ID
+   85       | lvalue '[' expression ']'
+   86       | lvalue '.' ID
+
+   87 actual_params: '(' expression expressions ')'
+   88              | '(' ')'
+
+   89 expressions: expressions ',' expression
+   90            | /* empty */
+
+   91 comp_values: '{' ID ASSIGN expression assign_expression_to_id_s '}'
+
+   92 assign_expression_to_id_s: assign_expression_to_id_s ';' ID ASSIGN expression
+   93                          | /* empty */
+
+   94 array_values: LBRACKET array_value comma_sep_array_values RBRACKET
+
+   95 comma_sep_array_values: comma_sep_array_values ',' array_value
+   96                       | /* empty */
+
+   97 array_value: expression
+   98            | expression OF expression
+
+   99 number: INTEGER
+  100       | REAL
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+'(' (40) 31 32 38 55 56 63 87 88
+')' (41) 31 32 38 55 56 63 87 88
+'*' (42) 67
+'+' (43) 64 72
+',' (44) 19 50 57 89 95
+'-' (45) 65 73
+'.' (46) 86
+'/' (47) 68
+':' (58) 17 24 30 35
+';' (59) 1 16 17 18 21 22 23 24 30 33 36 37 38 39 40 41 42 43 44 45
+    46 47 48 49 92
+'<' (60) 76
+'=' (61) 77
+'>' (62) 75
+'[' (91) 85
+']' (93) 85
+'{' (123) 91
+'}' (125) 91
+error (256) 18 22 49
+INTEGER (258) 99
+REAL (259) 100
+STRING (260) 59
+ID (261) 16 17 19 21 23 24 25 30 35 37 44 45 81 82 83 84 86 91 92
+TRUE (262)
+FALSE (263)
+ARRAY (264) 26
+PROGRAMBEGIN (265) 2
+BY (266) 45
+DO (267) 42 44 45
+ELSE (268) 41
+ELSIF (269) 54
+END (270) 2 27 40 41 42 43 44 45
+FOR (271) 44 45
+IF (272) 40 41
+IN (273)
+IS (274) 1 21 23 24
+LOOP (275) 43
+OF (276) 26 98
+OUT (277)
+PROCEDURE (278) 9
+PROGRAM (279) 1
+READ (280) 38
+RECORD (281) 27
+THEN (282) 40 41 54
+TO (283) 44 45
+TYPE (284) 8
+VAR (285) 7
+WHILE (286) 42
+WRITE (287) 39
+EXIT (288) 46
+RETURN (289) 47 48
+LBRACKET (290) 94
+RBRACKET (291) 94
+BACKSLASH (292)
+ASSIGN (293) 16 17 36 44 45 91 92
+NOT (294) 66
+LE (295) 79
+GE (296) 78
+NE (297) 80
+OR (298) 74
+MOD (299) 71
+DIV (300) 70
+AND (301) 69
+UNARY (302)
+
+
+Nonterminals, with rules where they appear
+
+$accept (65)
+    on left: 0
+program (66)
+    on left: 1, on right: 0
+body (67)
+    on left: 2, on right: 1 23 24
+declarations (68)
+    on left: 3 4, on right: 2 3
+statements (69)
+    on left: 5 6, on right: 2 5 40 41 42 43 44 45 54
+declaration (70)
+    on left: 7 8 9, on right: 3
+var_decls (71)
+    on left: 10 11, on right: 7 10
+type_decls (72)
+    on left: 12 13, on right: 8 12
+procedure_decls (73)
+    on left: 14 15, on right: 9 14
+var_decl (74)
+    on left: 16 17 18, on right: 10
+ids (75)
+    on left: 19 20, on right: 16 17 19 35
+type_decl (76)
+    on left: 21 22, on right: 12
+procedure_decl (77)
+    on left: 23 24, on right: 14
+type (78)
+    on left: 25 26 27, on right: 17 21 24 26 30 35
+components (79)
+    on left: 28 29, on right: 27 28
+component (80)
+    on left: 30, on right: 27 28
+formal_params (81)
+    on left: 31 32, on right: 23 24
+fp_sections (82)
+    on left: 33 34, on right: 31 33
+fp_section (83)
+    on left: 35, on right: 31 33
+statement (84)
+    on left: 36 37 38 39 40 41 42 43 44 45 46 47 48 49,
+    on right: 5
+lvalues (85)
+    on left: 50 51, on right: 38 50
+elsifs (86)
+    on left: 52 53, on right: 40 41 52
+elsif (87)
+    on left: 54, on right: 52
+write_params (88)
+    on left: 55 56, on right: 39
+write_exprs (89)
+    on left: 57 58, on right: 55 57
+write_expr (90)
+    on left: 59 60, on right: 55 57
+expression (91)
+    on left: 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78
+    79 80 81 82 83, on right: 16 17 36 40 41 42 44 45 48 54 60 63 64
+    65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 85 87 89 91 92
+    97 98
+lvalue (92)
+    on left: 84 85 86, on right: 36 38 50 62 85 86
+actual_params (93)
+    on left: 87 88, on right: 37 81
+expressions (94)
+    on left: 89 90, on right: 87 89
+comp_values (95)
+    on left: 91, on right: 82
+assign_expression_to_id_s (96)
+    on left: 92 93, on right: 91 92
+array_values (97)
+    on left: 94, on right: 83
+comma_sep_array_values (98)
+    on left: 95 96, on right: 94 95
+array_value (99)
+    on left: 97 98, on right: 94 95
+number (100)
+    on left: 99 100, on right: 61
+
+
+state 0
+
+    0 $accept: . program $end
+    1 program: . PROGRAM IS body ';'
+
+    PROGRAM  shift, and go to state 1
+
+    program  go to state 2
+
+
+state 1
+
+    1 program: PROGRAM . IS body ';'
+
+    IS  shift, and go to state 3
+
+
+state 2
+
+    0 $accept: program . $end
+
+    $end  shift, and go to state 4
+
+
+state 3
+
+    1 program: PROGRAM IS . body ';'
+    2 body: . declarations PROGRAMBEGIN statements END
+    3 declarations: . declarations declaration
+    4             | .
+
+    $default  reduce using rule 4 (declarations)
+
+    body          go to state 5
+    declarations  go to state 6
+
+
+state 4
+
+    0 $accept: program $end .
+
+    $default  accept
+
+
+state 5
+
+    1 program: PROGRAM IS body . ';'
+
+    ';'  shift, and go to state 7
+
+
+state 6
+
+    2 body: declarations . PROGRAMBEGIN statements END
+    3 declarations: declarations . declaration
+    7 declaration: . VAR var_decls
+    8            | . TYPE type_decls
+    9            | . PROCEDURE procedure_decls
+
+    PROGRAMBEGIN  shift, and go to state 8
+    PROCEDURE     shift, and go to state 9
+    TYPE          shift, and go to state 10
+    VAR           shift, and go to state 11
+
+    declaration  go to state 12
+
+
+state 7
+
+    1 program: PROGRAM IS body ';' .
+
+    $default  reduce using rule 1 (program)
+
+
+state 8
+
+    2 body: declarations PROGRAMBEGIN . statements END
+    5 statements: . statements statement
+    6           | .
+
+    $default  reduce using rule 6 (statements)
+
+    statements  go to state 13
+
+
+state 9
+
+    9 declaration: PROCEDURE . procedure_decls
+   14 procedure_decls: . procedure_decls procedure_decl
+   15                | .
+
+    $default  reduce using rule 15 (procedure_decls)
+
+    procedure_decls  go to state 14
+
+
+state 10
+
+    8 declaration: TYPE . type_decls
+   12 type_decls: . type_decls type_decl
+   13           | .
+
+    $default  reduce using rule 13 (type_decls)
+
+    type_decls  go to state 15
+
+
+state 11
+
+    7 declaration: VAR . var_decls
+   10 var_decls: . var_decls var_decl
+   11          | .
+
+    $default  reduce using rule 11 (var_decls)
+
+    var_decls  go to state 16
+
+
+state 12
+
+    3 declarations: declarations declaration .
+
+    $default  reduce using rule 3 (declarations)
+
+
+state 13
+
+    2 body: declarations PROGRAMBEGIN statements . END
+    5 statements: statements . statement
+   36 statement: . lvalue ASSIGN expression ';'
+   37          | . ID actual_params ';'
+   38          | . READ '(' lvalue lvalues ')' ';'
+   39          | . WRITE write_params ';'
+   40          | . IF expression THEN statements elsifs END ';'
+   41          | . IF expression THEN statements elsifs ELSE statements END ';'
+   42          | . WHILE expression DO statements END ';'
+   43          | . LOOP statements END ';'
+   44          | . FOR ID ASSIGN expression TO expression DO statements END ';'
+   45          | . FOR ID ASSIGN expression TO expression BY expression DO statements END ';'
+   46          | . EXIT ';'
+   47          | . RETURN ';'
+   48          | . RETURN expression ';'
+   49          | . error ';'
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+
+    error   shift, and go to state 17
+    ID      shift, and go to state 18
+    END     shift, and go to state 19
+    FOR     shift, and go to state 20
+    IF      shift, and go to state 21
+    LOOP    shift, and go to state 22
+    READ    shift, and go to state 23
+    WHILE   shift, and go to state 24
+    WRITE   shift, and go to state 25
+    EXIT    shift, and go to state 26
+    RETURN  shift, and go to state 27
+
+    statement  go to state 28
+    lvalue     go to state 29
+
+
+state 14
+
+    9 declaration: PROCEDURE procedure_decls .  [PROGRAMBEGIN, PROCEDURE, TYPE, VAR]
+   14 procedure_decls: procedure_decls . procedure_decl
+   23 procedure_decl: . ID formal_params IS body ';'
+   24               | . ID formal_params ':' type IS body ';'
+
+    ID  shift, and go to state 30
+
+    $default  reduce using rule 9 (declaration)
+
+    procedure_decl  go to state 31
+
+
+state 15
+
+    8 declaration: TYPE type_decls .  [PROGRAMBEGIN, PROCEDURE, TYPE, VAR]
+   12 type_decls: type_decls . type_decl
+   21 type_decl: . ID IS type ';'
+   22          | . error ';'
+
+    error  shift, and go to state 32
+    ID     shift, and go to state 33
+
+    PROGRAMBEGIN  reduce using rule 8 (declaration)
+    PROCEDURE     reduce using rule 8 (declaration)
+    TYPE          reduce using rule 8 (declaration)
+    VAR           reduce using rule 8 (declaration)
+
+    type_decl  go to state 34
+
+
+state 16
+
+    7 declaration: VAR var_decls .  [PROGRAMBEGIN, PROCEDURE, TYPE, VAR]
+   10 var_decls: var_decls . var_decl
+   16 var_decl: . ID ids ASSIGN expression ';'
+   17         | . ID ids ':' type ASSIGN expression ';'
+   18         | . error ';'
+
+    error  shift, and go to state 35
+    ID     shift, and go to state 36
+
+    PROGRAMBEGIN  reduce using rule 7 (declaration)
+    PROCEDURE     reduce using rule 7 (declaration)
+    TYPE          reduce using rule 7 (declaration)
+    VAR           reduce using rule 7 (declaration)
+
+    var_decl  go to state 37
+
+
+state 17
+
+   49 statement: error . ';'
+
+    ';'  shift, and go to state 38
+
+
+state 18
+
+   37 statement: ID . actual_params ';'
+   84 lvalue: ID .  ['.', '[', ASSIGN]
+   87 actual_params: . '(' expression expressions ')'
+   88              | . '(' ')'
+
+    '('  shift, and go to state 39
+
+    $default  reduce using rule 84 (lvalue)
+
+    actual_params  go to state 40
+
+
+state 19
+
+    2 body: declarations PROGRAMBEGIN statements END .
+
+    $default  reduce using rule 2 (body)
+
+
+state 20
+
+   44 statement: FOR . ID ASSIGN expression TO expression DO statements END ';'
+   45          | FOR . ID ASSIGN expression TO expression BY expression DO statements END ';'
+
+    ID  shift, and go to state 41
+
+
+state 21
+
+   40 statement: IF . expression THEN statements elsifs END ';'
+   41          | IF . expression THEN statements elsifs ELSE statements END ';'
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 49
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 22
+
+    5 statements: . statements statement
+    6           | .
+   43 statement: LOOP . statements END ';'
+
+    $default  reduce using rule 6 (statements)
+
+    statements  go to state 52
+
+
+state 23
+
+   38 statement: READ . '(' lvalue lvalues ')' ';'
+
+    '('  shift, and go to state 53
+
+
+state 24
+
+   42 statement: WHILE . expression DO statements END ';'
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 54
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 25
+
+   39 statement: WRITE . write_params ';'
+   55 write_params: . '(' write_expr write_exprs ')'
+   56             | . '(' ')'
+
+    '('  shift, and go to state 55
+
+    write_params  go to state 56
+
+
+state 26
+
+   46 statement: EXIT . ';'
+
+    ';'  shift, and go to state 57
+
+
+state 27
+
+   47 statement: RETURN . ';'
+   48          | RETURN . expression ';'
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    ';'      shift, and go to state 58
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 59
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 28
+
+    5 statements: statements statement .
+
+    $default  reduce using rule 5 (statements)
+
+
+state 29
+
+   36 statement: lvalue . ASSIGN expression ';'
+   85 lvalue: lvalue . '[' expression ']'
+   86       | lvalue . '.' ID
+
+    '.'     shift, and go to state 60
+    '['     shift, and go to state 61
+    ASSIGN  shift, and go to state 62
+
+
+state 30
+
+   23 procedure_decl: ID . formal_params IS body ';'
+   24               | ID . formal_params ':' type IS body ';'
+   31 formal_params: . '(' fp_section fp_sections ')'
+   32              | . '(' ')'
+
+    '('  shift, and go to state 63
+
+    formal_params  go to state 64
+
+
+state 31
+
+   14 procedure_decls: procedure_decls procedure_decl .
+
+    $default  reduce using rule 14 (procedure_decls)
+
+
+state 32
+
+   22 type_decl: error . ';'
+
+    ';'  shift, and go to state 65
+
+
+state 33
+
+   21 type_decl: ID . IS type ';'
+
+    IS  shift, and go to state 66
+
+
+state 34
+
+   12 type_decls: type_decls type_decl .
+
+    $default  reduce using rule 12 (type_decls)
+
+
+state 35
+
+   18 var_decl: error . ';'
+
+    ';'  shift, and go to state 67
+
+
+state 36
+
+   16 var_decl: ID . ids ASSIGN expression ';'
+   17         | ID . ids ':' type ASSIGN expression ';'
+   19 ids: . ids ',' ID
+   20    | .
+
+    $default  reduce using rule 20 (ids)
+
+    ids  go to state 68
+
+
+state 37
+
+   10 var_decls: var_decls var_decl .
+
+    $default  reduce using rule 10 (var_decls)
+
+
+state 38
+
+   49 statement: error ';' .
+
+    $default  reduce using rule 49 (statement)
+
+
+state 39
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   87 actual_params: '(' . expression expressions ')'
+   88              | '(' . ')'
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    ')'      shift, and go to state 69
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 70
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 40
+
+   37 statement: ID actual_params . ';'
+
+    ';'  shift, and go to state 71
+
+
+state 41
+
+   44 statement: FOR ID . ASSIGN expression TO expression DO statements END ';'
+   45          | FOR ID . ASSIGN expression TO expression BY expression DO statements END ';'
+
+    ASSIGN  shift, and go to state 72
+
+
+state 42
+
+   99 number: INTEGER .
+
+    $default  reduce using rule 99 (number)
+
+
+state 43
+
+  100 number: REAL .
+
+    $default  reduce using rule 100 (number)
+
+
+state 44
+
+   81 expression: ID . actual_params
+   82           | ID . comp_values
+   83           | ID . array_values
+   84 lvalue: ID .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', '.', ')', '[', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-', '*', '/', MOD, DIV, AND]
+   87 actual_params: . '(' expression expressions ')'
+   88              | . '(' ')'
+   91 comp_values: . '{' ID ASSIGN expression assign_expression_to_id_s '}'
+   94 array_values: . LBRACKET array_value comma_sep_array_values RBRACKET
+
+    LBRACKET  shift, and go to state 73
+    '('       shift, and go to state 39
+    '{'       shift, and go to state 74
+
+    $default  reduce using rule 84 (lvalue)
+
+    actual_params  go to state 75
+    comp_values    go to state 76
+    array_values   go to state 77
+
+
+state 45
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   63           | '(' . expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 78
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 46
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   66           | NOT . expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 79
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 47
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   64           | '+' . expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 80
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 48
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   65           | '-' . expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 81
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 49
+
+   40 statement: IF expression . THEN statements elsifs END ';'
+   41          | IF expression . THEN statements elsifs ELSE statements END ';'
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    THEN  shift, and go to state 82
+    LE    shift, and go to state 83
+    GE    shift, and go to state 84
+    '<'   shift, and go to state 85
+    NE    shift, and go to state 86
+    '>'   shift, and go to state 87
+    '='   shift, and go to state 88
+    '+'   shift, and go to state 89
+    OR    shift, and go to state 90
+    '-'   shift, and go to state 91
+    '*'   shift, and go to state 92
+    '/'   shift, and go to state 93
+    MOD   shift, and go to state 94
+    DIV   shift, and go to state 95
+    AND   shift, and go to state 96
+
+
+state 50
+
+   62 expression: lvalue .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-', '*', '/', MOD, DIV, AND]
+   85 lvalue: lvalue . '[' expression ']'
+   86       | lvalue . '.' ID
+
+    '.'  shift, and go to state 60
+    '['  shift, and go to state 61
+
+    $default  reduce using rule 62 (expression)
+
+
+state 51
+
+   61 expression: number .
+
+    $default  reduce using rule 61 (expression)
+
+
+state 52
+
+    5 statements: statements . statement
+   36 statement: . lvalue ASSIGN expression ';'
+   37          | . ID actual_params ';'
+   38          | . READ '(' lvalue lvalues ')' ';'
+   39          | . WRITE write_params ';'
+   40          | . IF expression THEN statements elsifs END ';'
+   41          | . IF expression THEN statements elsifs ELSE statements END ';'
+   42          | . WHILE expression DO statements END ';'
+   43          | . LOOP statements END ';'
+   43          | LOOP statements . END ';'
+   44          | . FOR ID ASSIGN expression TO expression DO statements END ';'
+   45          | . FOR ID ASSIGN expression TO expression BY expression DO statements END ';'
+   46          | . EXIT ';'
+   47          | . RETURN ';'
+   48          | . RETURN expression ';'
+   49          | . error ';'
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+
+    error   shift, and go to state 17
+    ID      shift, and go to state 18
+    END     shift, and go to state 97
+    FOR     shift, and go to state 20
+    IF      shift, and go to state 21
+    LOOP    shift, and go to state 22
+    READ    shift, and go to state 23
+    WHILE   shift, and go to state 24
+    WRITE   shift, and go to state 25
+    EXIT    shift, and go to state 26
+    RETURN  shift, and go to state 27
+
+    statement  go to state 28
+    lvalue     go to state 29
+
+
+state 53
+
+   38 statement: READ '(' . lvalue lvalues ')' ';'
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+
+    ID  shift, and go to state 98
+
+    lvalue  go to state 99
+
+
+state 54
+
+   42 statement: WHILE expression . DO statements END ';'
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    DO   shift, and go to state 100
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+
+state 55
+
+   55 write_params: '(' . write_expr write_exprs ')'
+   56             | '(' . ')'
+   59 write_expr: . STRING
+   60           | . expression
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    STRING   shift, and go to state 101
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    ')'      shift, and go to state 102
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    write_expr  go to state 103
+    expression  go to state 104
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 56
+
+   39 statement: WRITE write_params . ';'
+
+    ';'  shift, and go to state 105
+
+
+state 57
+
+   46 statement: EXIT ';' .
+
+    $default  reduce using rule 46 (statement)
+
+
+state 58
+
+   47 statement: RETURN ';' .
+
+    $default  reduce using rule 47 (statement)
+
+
+state 59
+
+   48 statement: RETURN expression . ';'
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    ';'  shift, and go to state 106
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+
+state 60
+
+   86 lvalue: lvalue '.' . ID
+
+    ID  shift, and go to state 107
+
+
+state 61
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   85       | lvalue '[' . expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 108
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 62
+
+   36 statement: lvalue ASSIGN . expression ';'
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 109
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 63
+
+   31 formal_params: '(' . fp_section fp_sections ')'
+   32              | '(' . ')'
+   35 fp_section: . ID ids ':' type
+
+    ID   shift, and go to state 110
+    ')'  shift, and go to state 111
+
+    fp_section  go to state 112
+
+
+state 64
+
+   23 procedure_decl: ID formal_params . IS body ';'
+   24               | ID formal_params . ':' type IS body ';'
+
+    IS   shift, and go to state 113
+    ':'  shift, and go to state 114
+
+
+state 65
+
+   22 type_decl: error ';' .
+
+    $default  reduce using rule 22 (type_decl)
+
+
+state 66
+
+   21 type_decl: ID IS . type ';'
+   25 type: . ID
+   26     | . ARRAY OF type
+   27     | . RECORD component components END
+
+    ID      shift, and go to state 115
+    ARRAY   shift, and go to state 116
+    RECORD  shift, and go to state 117
+
+    type  go to state 118
+
+
+state 67
+
+   18 var_decl: error ';' .
+
+    $default  reduce using rule 18 (var_decl)
+
+
+state 68
+
+   16 var_decl: ID ids . ASSIGN expression ';'
+   17         | ID ids . ':' type ASSIGN expression ';'
+   19 ids: ids . ',' ID
+
+    ':'     shift, and go to state 119
+    ','     shift, and go to state 120
+    ASSIGN  shift, and go to state 121
+
+
+state 69
+
+   88 actual_params: '(' ')' .
+
+    $default  reduce using rule 88 (actual_params)
+
+
+state 70
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+   87 actual_params: '(' expression . expressions ')'
+   89 expressions: . expressions ',' expression
+   90            | .  [',', ')']
+
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+    $default  reduce using rule 90 (expressions)
+
+    expressions  go to state 122
+
+
+state 71
+
+   37 statement: ID actual_params ';' .
+
+    $default  reduce using rule 37 (statement)
+
+
+state 72
+
+   44 statement: FOR ID ASSIGN . expression TO expression DO statements END ';'
+   45          | FOR ID ASSIGN . expression TO expression BY expression DO statements END ';'
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 123
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 73
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   94 array_values: LBRACKET . array_value comma_sep_array_values RBRACKET
+   97 array_value: . expression
+   98            | . expression OF expression
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression   go to state 124
+    lvalue       go to state 50
+    array_value  go to state 125
+    number       go to state 51
+
+
+state 74
+
+   91 comp_values: '{' . ID ASSIGN expression assign_expression_to_id_s '}'
+
+    ID  shift, and go to state 126
+
+
+state 75
+
+   81 expression: ID actual_params .
+
+    $default  reduce using rule 81 (expression)
+
+
+state 76
+
+   82 expression: ID comp_values .
+
+    $default  reduce using rule 82 (expression)
+
+
+state 77
+
+   83 expression: ID array_values .
+
+    $default  reduce using rule 83 (expression)
+
+
+state 78
+
+   63 expression: '(' expression . ')'
+   67           | expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    ')'  shift, and go to state 127
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+
+state 79
+
+   66 expression: NOT expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-', '*', '/', MOD, DIV, AND]
+   67           | expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    $default  reduce using rule 66 (expression)
+
+    Conflict between rule 66 and token LE resolved as reduce (LE < UNARY).
+    Conflict between rule 66 and token GE resolved as reduce (GE < UNARY).
+    Conflict between rule 66 and token '<' resolved as reduce ('<' < UNARY).
+    Conflict between rule 66 and token NE resolved as reduce (NE < UNARY).
+    Conflict between rule 66 and token '>' resolved as reduce ('>' < UNARY).
+    Conflict between rule 66 and token '=' resolved as reduce ('=' < UNARY).
+    Conflict between rule 66 and token '+' resolved as reduce ('+' < UNARY).
+    Conflict between rule 66 and token OR resolved as reduce (OR < UNARY).
+    Conflict between rule 66 and token '-' resolved as reduce ('-' < UNARY).
+    Conflict between rule 66 and token '*' resolved as reduce ('*' < UNARY).
+    Conflict between rule 66 and token '/' resolved as reduce ('/' < UNARY).
+    Conflict between rule 66 and token MOD resolved as reduce (MOD < UNARY).
+    Conflict between rule 66 and token DIV resolved as reduce (DIV < UNARY).
+    Conflict between rule 66 and token AND resolved as reduce (AND < UNARY).
+
+
+state 80
+
+   64 expression: '+' expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-', '*', '/', MOD, DIV, AND]
+   67           | expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    $default  reduce using rule 64 (expression)
+
+    Conflict between rule 64 and token LE resolved as reduce (LE < UNARY).
+    Conflict between rule 64 and token GE resolved as reduce (GE < UNARY).
+    Conflict between rule 64 and token '<' resolved as reduce ('<' < UNARY).
+    Conflict between rule 64 and token NE resolved as reduce (NE < UNARY).
+    Conflict between rule 64 and token '>' resolved as reduce ('>' < UNARY).
+    Conflict between rule 64 and token '=' resolved as reduce ('=' < UNARY).
+    Conflict between rule 64 and token '+' resolved as reduce ('+' < UNARY).
+    Conflict between rule 64 and token OR resolved as reduce (OR < UNARY).
+    Conflict between rule 64 and token '-' resolved as reduce ('-' < UNARY).
+    Conflict between rule 64 and token '*' resolved as reduce ('*' < UNARY).
+    Conflict between rule 64 and token '/' resolved as reduce ('/' < UNARY).
+    Conflict between rule 64 and token MOD resolved as reduce (MOD < UNARY).
+    Conflict between rule 64 and token DIV resolved as reduce (DIV < UNARY).
+    Conflict between rule 64 and token AND resolved as reduce (AND < UNARY).
+
+
+state 81
+
+   65 expression: '-' expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-', '*', '/', MOD, DIV, AND]
+   67           | expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    $default  reduce using rule 65 (expression)
+
+    Conflict between rule 65 and token LE resolved as reduce (LE < UNARY).
+    Conflict between rule 65 and token GE resolved as reduce (GE < UNARY).
+    Conflict between rule 65 and token '<' resolved as reduce ('<' < UNARY).
+    Conflict between rule 65 and token NE resolved as reduce (NE < UNARY).
+    Conflict between rule 65 and token '>' resolved as reduce ('>' < UNARY).
+    Conflict between rule 65 and token '=' resolved as reduce ('=' < UNARY).
+    Conflict between rule 65 and token '+' resolved as reduce ('+' < UNARY).
+    Conflict between rule 65 and token OR resolved as reduce (OR < UNARY).
+    Conflict between rule 65 and token '-' resolved as reduce ('-' < UNARY).
+    Conflict between rule 65 and token '*' resolved as reduce ('*' < UNARY).
+    Conflict between rule 65 and token '/' resolved as reduce ('/' < UNARY).
+    Conflict between rule 65 and token MOD resolved as reduce (MOD < UNARY).
+    Conflict between rule 65 and token DIV resolved as reduce (DIV < UNARY).
+    Conflict between rule 65 and token AND resolved as reduce (AND < UNARY).
+
+
+state 82
+
+    5 statements: . statements statement
+    6           | .
+   40 statement: IF expression THEN . statements elsifs END ';'
+   41          | IF expression THEN . statements elsifs ELSE statements END ';'
+
+    $default  reduce using rule 6 (statements)
+
+    statements  go to state 128
+
+
+state 83
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   79           | expression LE . expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 129
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 84
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   78           | expression GE . expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 130
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 85
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   76           | expression '<' . expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 131
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 86
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   80           | expression NE . expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 132
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 87
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   75           | expression '>' . expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 133
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 88
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   77           | expression '=' . expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 134
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 89
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   72           | expression '+' . expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 135
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 90
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   74           | expression OR . expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 136
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 91
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   73           | expression '-' . expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 137
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 92
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   67           | expression '*' . expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 138
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 93
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   68           | expression '/' . expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 139
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 94
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   71           | expression MOD . expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 140
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 95
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   70           | expression DIV . expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 141
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 96
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   69           | expression AND . expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 142
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 97
+
+   43 statement: LOOP statements END . ';'
+
+    ';'  shift, and go to state 143
+
+
+state 98
+
+   84 lvalue: ID .
+
+    $default  reduce using rule 84 (lvalue)
+
+
+state 99
+
+   38 statement: READ '(' lvalue . lvalues ')' ';'
+   50 lvalues: . lvalues ',' lvalue
+   51        | .  [',', ')']
+   85 lvalue: lvalue . '[' expression ']'
+   86       | lvalue . '.' ID
+
+    '.'  shift, and go to state 60
+    '['  shift, and go to state 61
+
+    $default  reduce using rule 51 (lvalues)
+
+    lvalues  go to state 144
+
+
+state 100
+
+    5 statements: . statements statement
+    6           | .
+   42 statement: WHILE expression DO . statements END ';'
+
+    $default  reduce using rule 6 (statements)
+
+    statements  go to state 145
+
+
+state 101
+
+   59 write_expr: STRING .
+
+    $default  reduce using rule 59 (write_expr)
+
+
+state 102
+
+   56 write_params: '(' ')' .
+
+    $default  reduce using rule 56 (write_params)
+
+
+state 103
+
+   55 write_params: '(' write_expr . write_exprs ')'
+   57 write_exprs: . write_exprs ',' write_expr
+   58            | .
+
+    $default  reduce using rule 58 (write_exprs)
+
+    write_exprs  go to state 146
+
+
+state 104
+
+   60 write_expr: expression .  [',', ')']
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+    $default  reduce using rule 60 (write_expr)
+
+
+state 105
+
+   39 statement: WRITE write_params ';' .
+
+    $default  reduce using rule 39 (statement)
+
+
+state 106
+
+   48 statement: RETURN expression ';' .
+
+    $default  reduce using rule 48 (statement)
+
+
+state 107
+
+   86 lvalue: lvalue '.' ID .
+
+    $default  reduce using rule 86 (lvalue)
+
+
+state 108
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+   85 lvalue: lvalue '[' expression . ']'
+
+    ']'  shift, and go to state 147
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+
+state 109
+
+   36 statement: lvalue ASSIGN expression . ';'
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    ';'  shift, and go to state 148
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+
+state 110
+
+   19 ids: . ids ',' ID
+   20    | .
+   35 fp_section: ID . ids ':' type
+
+    $default  reduce using rule 20 (ids)
+
+    ids  go to state 149
+
+
+state 111
+
+   32 formal_params: '(' ')' .
+
+    $default  reduce using rule 32 (formal_params)
+
+
+state 112
+
+   31 formal_params: '(' fp_section . fp_sections ')'
+   33 fp_sections: . fp_sections ';' fp_section
+   34            | .
+
+    $default  reduce using rule 34 (fp_sections)
+
+    fp_sections  go to state 150
+
+
+state 113
+
+    2 body: . declarations PROGRAMBEGIN statements END
+    3 declarations: . declarations declaration
+    4             | .
+   23 procedure_decl: ID formal_params IS . body ';'
+
+    $default  reduce using rule 4 (declarations)
+
+    body          go to state 151
+    declarations  go to state 6
+
+
+state 114
+
+   24 procedure_decl: ID formal_params ':' . type IS body ';'
+   25 type: . ID
+   26     | . ARRAY OF type
+   27     | . RECORD component components END
+
+    ID      shift, and go to state 115
+    ARRAY   shift, and go to state 116
+    RECORD  shift, and go to state 117
+
+    type  go to state 152
+
+
+state 115
+
+   25 type: ID .
+
+    $default  reduce using rule 25 (type)
+
+
+state 116
+
+   26 type: ARRAY . OF type
+
+    OF  shift, and go to state 153
+
+
+state 117
+
+   27 type: RECORD . component components END
+   30 component: . ID ':' type ';'
+
+    ID  shift, and go to state 154
+
+    component  go to state 155
+
+
+state 118
+
+   21 type_decl: ID IS type . ';'
+
+    ';'  shift, and go to state 156
+
+
+state 119
+
+   17 var_decl: ID ids ':' . type ASSIGN expression ';'
+   25 type: . ID
+   26     | . ARRAY OF type
+   27     | . RECORD component components END
+
+    ID      shift, and go to state 115
+    ARRAY   shift, and go to state 116
+    RECORD  shift, and go to state 117
+
+    type  go to state 157
+
+
+state 120
+
+   19 ids: ids ',' . ID
+
+    ID  shift, and go to state 158
+
+
+state 121
+
+   16 var_decl: ID ids ASSIGN . expression ';'
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 159
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 122
+
+   87 actual_params: '(' expression expressions . ')'
+   89 expressions: expressions . ',' expression
+
+    ','  shift, and go to state 160
+    ')'  shift, and go to state 161
+
+
+state 123
+
+   44 statement: FOR ID ASSIGN expression . TO expression DO statements END ';'
+   45          | FOR ID ASSIGN expression . TO expression BY expression DO statements END ';'
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    TO   shift, and go to state 162
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+
+state 124
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+   97 array_value: expression .  [RBRACKET, ',']
+   98            | expression . OF expression
+
+    OF   shift, and go to state 163
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+    $default  reduce using rule 97 (array_value)
+
+
+state 125
+
+   94 array_values: LBRACKET array_value . comma_sep_array_values RBRACKET
+   95 comma_sep_array_values: . comma_sep_array_values ',' array_value
+   96                       | .
+
+    $default  reduce using rule 96 (comma_sep_array_values)
+
+    comma_sep_array_values  go to state 164
+
+
+state 126
+
+   91 comp_values: '{' ID . ASSIGN expression assign_expression_to_id_s '}'
+
+    ASSIGN  shift, and go to state 165
+
+
+state 127
+
+   63 expression: '(' expression ')' .
+
+    $default  reduce using rule 63 (expression)
+
+
+state 128
+
+    5 statements: statements . statement
+   36 statement: . lvalue ASSIGN expression ';'
+   37          | . ID actual_params ';'
+   38          | . READ '(' lvalue lvalues ')' ';'
+   39          | . WRITE write_params ';'
+   40          | . IF expression THEN statements elsifs END ';'
+   40          | IF expression THEN statements . elsifs END ';'
+   41          | . IF expression THEN statements elsifs ELSE statements END ';'
+   41          | IF expression THEN statements . elsifs ELSE statements END ';'
+   42          | . WHILE expression DO statements END ';'
+   43          | . LOOP statements END ';'
+   44          | . FOR ID ASSIGN expression TO expression DO statements END ';'
+   45          | . FOR ID ASSIGN expression TO expression BY expression DO statements END ';'
+   46          | . EXIT ';'
+   47          | . RETURN ';'
+   48          | . RETURN expression ';'
+   49          | . error ';'
+   52 elsifs: . elsifs elsif
+   53       | .  [ELSE, ELSIF, END]
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+
+    error   shift, and go to state 17
+    ID      shift, and go to state 18
+    FOR     shift, and go to state 20
+    IF      shift, and go to state 21
+    LOOP    shift, and go to state 22
+    READ    shift, and go to state 23
+    WHILE   shift, and go to state 24
+    WRITE   shift, and go to state 25
+    EXIT    shift, and go to state 26
+    RETURN  shift, and go to state 27
+
+    ELSE   reduce using rule 53 (elsifs)
+    ELSIF  reduce using rule 53 (elsifs)
+    END    reduce using rule 53 (elsifs)
+
+    statement  go to state 28
+    elsifs     go to state 166
+    lvalue     go to state 29
+
+
+state 129
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=']
+   79           | expression LE expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=']
+   80           | expression . NE expression
+
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+    $default  reduce using rule 79 (expression)
+
+    Conflict between rule 79 and token LE resolved as reduce (%left LE).
+    Conflict between rule 79 and token GE resolved as reduce (%left GE).
+    Conflict between rule 79 and token '<' resolved as reduce (%left '<').
+    Conflict between rule 79 and token NE resolved as reduce (%left NE).
+    Conflict between rule 79 and token '>' resolved as reduce (%left '>').
+    Conflict between rule 79 and token '=' resolved as reduce (%left '=').
+    Conflict between rule 79 and token '+' resolved as shift (LE < '+').
+    Conflict between rule 79 and token OR resolved as shift (LE < OR).
+    Conflict between rule 79 and token '-' resolved as shift (LE < '-').
+    Conflict between rule 79 and token '*' resolved as shift (LE < '*').
+    Conflict between rule 79 and token '/' resolved as shift (LE < '/').
+    Conflict between rule 79 and token MOD resolved as shift (LE < MOD).
+    Conflict between rule 79 and token DIV resolved as shift (LE < DIV).
+    Conflict between rule 79 and token AND resolved as shift (LE < AND).
+
+
+state 130
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=']
+   78           | expression GE expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=']
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+    $default  reduce using rule 78 (expression)
+
+    Conflict between rule 78 and token LE resolved as reduce (%left LE).
+    Conflict between rule 78 and token GE resolved as reduce (%left GE).
+    Conflict between rule 78 and token '<' resolved as reduce (%left '<').
+    Conflict between rule 78 and token NE resolved as reduce (%left NE).
+    Conflict between rule 78 and token '>' resolved as reduce (%left '>').
+    Conflict between rule 78 and token '=' resolved as reduce (%left '=').
+    Conflict between rule 78 and token '+' resolved as shift (GE < '+').
+    Conflict between rule 78 and token OR resolved as shift (GE < OR).
+    Conflict between rule 78 and token '-' resolved as shift (GE < '-').
+    Conflict between rule 78 and token '*' resolved as shift (GE < '*').
+    Conflict between rule 78 and token '/' resolved as shift (GE < '/').
+    Conflict between rule 78 and token MOD resolved as shift (GE < MOD).
+    Conflict between rule 78 and token DIV resolved as shift (GE < DIV).
+    Conflict between rule 78 and token AND resolved as shift (GE < AND).
+
+
+state 131
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=']
+   76           | expression '<' expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=']
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+    $default  reduce using rule 76 (expression)
+
+    Conflict between rule 76 and token LE resolved as reduce (%left LE).
+    Conflict between rule 76 and token GE resolved as reduce (%left GE).
+    Conflict between rule 76 and token '<' resolved as reduce (%left '<').
+    Conflict between rule 76 and token NE resolved as reduce (%left NE).
+    Conflict between rule 76 and token '>' resolved as reduce (%left '>').
+    Conflict between rule 76 and token '=' resolved as reduce (%left '=').
+    Conflict between rule 76 and token '+' resolved as shift ('<' < '+').
+    Conflict between rule 76 and token OR resolved as shift ('<' < OR).
+    Conflict between rule 76 and token '-' resolved as shift ('<' < '-').
+    Conflict between rule 76 and token '*' resolved as shift ('<' < '*').
+    Conflict between rule 76 and token '/' resolved as shift ('<' < '/').
+    Conflict between rule 76 and token MOD resolved as shift ('<' < MOD).
+    Conflict between rule 76 and token DIV resolved as shift ('<' < DIV).
+    Conflict between rule 76 and token AND resolved as shift ('<' < AND).
+
+
+state 132
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=']
+   80           | expression NE expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=']
+
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+    $default  reduce using rule 80 (expression)
+
+    Conflict between rule 80 and token LE resolved as reduce (%left LE).
+    Conflict between rule 80 and token GE resolved as reduce (%left GE).
+    Conflict between rule 80 and token '<' resolved as reduce (%left '<').
+    Conflict between rule 80 and token NE resolved as reduce (%left NE).
+    Conflict between rule 80 and token '>' resolved as reduce (%left '>').
+    Conflict between rule 80 and token '=' resolved as reduce (%left '=').
+    Conflict between rule 80 and token '+' resolved as shift (NE < '+').
+    Conflict between rule 80 and token OR resolved as shift (NE < OR).
+    Conflict between rule 80 and token '-' resolved as shift (NE < '-').
+    Conflict between rule 80 and token '*' resolved as shift (NE < '*').
+    Conflict between rule 80 and token '/' resolved as shift (NE < '/').
+    Conflict between rule 80 and token MOD resolved as shift (NE < MOD).
+    Conflict between rule 80 and token DIV resolved as shift (NE < DIV).
+    Conflict between rule 80 and token AND resolved as shift (NE < AND).
+
+
+state 133
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=']
+   75           | expression '>' expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=']
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+    $default  reduce using rule 75 (expression)
+
+    Conflict between rule 75 and token LE resolved as reduce (%left LE).
+    Conflict between rule 75 and token GE resolved as reduce (%left GE).
+    Conflict between rule 75 and token '<' resolved as reduce (%left '<').
+    Conflict between rule 75 and token NE resolved as reduce (%left NE).
+    Conflict between rule 75 and token '>' resolved as reduce (%left '>').
+    Conflict between rule 75 and token '=' resolved as reduce (%left '=').
+    Conflict between rule 75 and token '+' resolved as shift ('>' < '+').
+    Conflict between rule 75 and token OR resolved as shift ('>' < OR).
+    Conflict between rule 75 and token '-' resolved as shift ('>' < '-').
+    Conflict between rule 75 and token '*' resolved as shift ('>' < '*').
+    Conflict between rule 75 and token '/' resolved as shift ('>' < '/').
+    Conflict between rule 75 and token MOD resolved as shift ('>' < MOD).
+    Conflict between rule 75 and token DIV resolved as shift ('>' < DIV).
+    Conflict between rule 75 and token AND resolved as shift ('>' < AND).
+
+
+state 134
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=']
+   77           | expression '=' expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=']
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+    $default  reduce using rule 77 (expression)
+
+    Conflict between rule 77 and token LE resolved as reduce (%left LE).
+    Conflict between rule 77 and token GE resolved as reduce (%left GE).
+    Conflict between rule 77 and token '<' resolved as reduce (%left '<').
+    Conflict between rule 77 and token NE resolved as reduce (%left NE).
+    Conflict between rule 77 and token '>' resolved as reduce (%left '>').
+    Conflict between rule 77 and token '=' resolved as reduce (%left '=').
+    Conflict between rule 77 and token '+' resolved as shift ('=' < '+').
+    Conflict between rule 77 and token OR resolved as shift ('=' < OR).
+    Conflict between rule 77 and token '-' resolved as shift ('=' < '-').
+    Conflict between rule 77 and token '*' resolved as shift ('=' < '*').
+    Conflict between rule 77 and token '/' resolved as shift ('=' < '/').
+    Conflict between rule 77 and token MOD resolved as shift ('=' < MOD).
+    Conflict between rule 77 and token DIV resolved as shift ('=' < DIV).
+    Conflict between rule 77 and token AND resolved as shift ('=' < AND).
+
+
+state 135
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-']
+   72           | expression '+' expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-']
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+    $default  reduce using rule 72 (expression)
+
+    Conflict between rule 72 and token LE resolved as reduce (LE < '+').
+    Conflict between rule 72 and token GE resolved as reduce (GE < '+').
+    Conflict between rule 72 and token '<' resolved as reduce ('<' < '+').
+    Conflict between rule 72 and token NE resolved as reduce (NE < '+').
+    Conflict between rule 72 and token '>' resolved as reduce ('>' < '+').
+    Conflict between rule 72 and token '=' resolved as reduce ('=' < '+').
+    Conflict between rule 72 and token '+' resolved as reduce (%left '+').
+    Conflict between rule 72 and token OR resolved as reduce (%left OR).
+    Conflict between rule 72 and token '-' resolved as reduce (%left '-').
+    Conflict between rule 72 and token '*' resolved as shift ('+' < '*').
+    Conflict between rule 72 and token '/' resolved as shift ('+' < '/').
+    Conflict between rule 72 and token MOD resolved as shift ('+' < MOD).
+    Conflict between rule 72 and token DIV resolved as shift ('+' < DIV).
+    Conflict between rule 72 and token AND resolved as shift ('+' < AND).
+
+
+state 136
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-']
+   74           | expression OR expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-']
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+    $default  reduce using rule 74 (expression)
+
+    Conflict between rule 74 and token LE resolved as reduce (LE < OR).
+    Conflict between rule 74 and token GE resolved as reduce (GE < OR).
+    Conflict between rule 74 and token '<' resolved as reduce ('<' < OR).
+    Conflict between rule 74 and token NE resolved as reduce (NE < OR).
+    Conflict between rule 74 and token '>' resolved as reduce ('>' < OR).
+    Conflict between rule 74 and token '=' resolved as reduce ('=' < OR).
+    Conflict between rule 74 and token '+' resolved as reduce (%left '+').
+    Conflict between rule 74 and token OR resolved as reduce (%left OR).
+    Conflict between rule 74 and token '-' resolved as reduce (%left '-').
+    Conflict between rule 74 and token '*' resolved as shift (OR < '*').
+    Conflict between rule 74 and token '/' resolved as shift (OR < '/').
+    Conflict between rule 74 and token MOD resolved as shift (OR < MOD).
+    Conflict between rule 74 and token DIV resolved as shift (OR < DIV).
+    Conflict between rule 74 and token AND resolved as shift (OR < AND).
+
+
+state 137
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-']
+   73           | expression '-' expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-']
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+    $default  reduce using rule 73 (expression)
+
+    Conflict between rule 73 and token LE resolved as reduce (LE < '-').
+    Conflict between rule 73 and token GE resolved as reduce (GE < '-').
+    Conflict between rule 73 and token '<' resolved as reduce ('<' < '-').
+    Conflict between rule 73 and token NE resolved as reduce (NE < '-').
+    Conflict between rule 73 and token '>' resolved as reduce ('>' < '-').
+    Conflict between rule 73 and token '=' resolved as reduce ('=' < '-').
+    Conflict between rule 73 and token '+' resolved as reduce (%left '+').
+    Conflict between rule 73 and token OR resolved as reduce (%left OR).
+    Conflict between rule 73 and token '-' resolved as reduce (%left '-').
+    Conflict between rule 73 and token '*' resolved as shift ('-' < '*').
+    Conflict between rule 73 and token '/' resolved as shift ('-' < '/').
+    Conflict between rule 73 and token MOD resolved as shift ('-' < MOD).
+    Conflict between rule 73 and token DIV resolved as shift ('-' < DIV).
+    Conflict between rule 73 and token AND resolved as shift ('-' < AND).
+
+
+state 138
+
+   67 expression: expression . '*' expression  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-', '*', '/', MOD, DIV, AND]
+   67           | expression '*' expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-', '*', '/', MOD, DIV, AND]
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    $default  reduce using rule 67 (expression)
+
+    Conflict between rule 67 and token LE resolved as reduce (LE < '*').
+    Conflict between rule 67 and token GE resolved as reduce (GE < '*').
+    Conflict between rule 67 and token '<' resolved as reduce ('<' < '*').
+    Conflict between rule 67 and token NE resolved as reduce (NE < '*').
+    Conflict between rule 67 and token '>' resolved as reduce ('>' < '*').
+    Conflict between rule 67 and token '=' resolved as reduce ('=' < '*').
+    Conflict between rule 67 and token '+' resolved as reduce ('+' < '*').
+    Conflict between rule 67 and token OR resolved as reduce (OR < '*').
+    Conflict between rule 67 and token '-' resolved as reduce ('-' < '*').
+    Conflict between rule 67 and token '*' resolved as reduce (%left '*').
+    Conflict between rule 67 and token '/' resolved as reduce (%left '/').
+    Conflict between rule 67 and token MOD resolved as reduce (%left MOD).
+    Conflict between rule 67 and token DIV resolved as reduce (%left DIV).
+    Conflict between rule 67 and token AND resolved as reduce (%left AND).
+
+
+state 139
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-', '*', '/', MOD, DIV, AND]
+   68           | expression '/' expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-', '*', '/', MOD, DIV, AND]
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    $default  reduce using rule 68 (expression)
+
+    Conflict between rule 68 and token LE resolved as reduce (LE < '/').
+    Conflict between rule 68 and token GE resolved as reduce (GE < '/').
+    Conflict between rule 68 and token '<' resolved as reduce ('<' < '/').
+    Conflict between rule 68 and token NE resolved as reduce (NE < '/').
+    Conflict between rule 68 and token '>' resolved as reduce ('>' < '/').
+    Conflict between rule 68 and token '=' resolved as reduce ('=' < '/').
+    Conflict between rule 68 and token '+' resolved as reduce ('+' < '/').
+    Conflict between rule 68 and token OR resolved as reduce (OR < '/').
+    Conflict between rule 68 and token '-' resolved as reduce ('-' < '/').
+    Conflict between rule 68 and token '*' resolved as reduce (%left '*').
+    Conflict between rule 68 and token '/' resolved as reduce (%left '/').
+    Conflict between rule 68 and token MOD resolved as reduce (%left MOD).
+    Conflict between rule 68 and token DIV resolved as reduce (%left DIV).
+    Conflict between rule 68 and token AND resolved as reduce (%left AND).
+
+
+state 140
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-', '*', '/', MOD, DIV, AND]
+   71           | expression MOD expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-', '*', '/', MOD, DIV, AND]
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    $default  reduce using rule 71 (expression)
+
+    Conflict between rule 71 and token LE resolved as reduce (LE < MOD).
+    Conflict between rule 71 and token GE resolved as reduce (GE < MOD).
+    Conflict between rule 71 and token '<' resolved as reduce ('<' < MOD).
+    Conflict between rule 71 and token NE resolved as reduce (NE < MOD).
+    Conflict between rule 71 and token '>' resolved as reduce ('>' < MOD).
+    Conflict between rule 71 and token '=' resolved as reduce ('=' < MOD).
+    Conflict between rule 71 and token '+' resolved as reduce ('+' < MOD).
+    Conflict between rule 71 and token OR resolved as reduce (OR < MOD).
+    Conflict between rule 71 and token '-' resolved as reduce ('-' < MOD).
+    Conflict between rule 71 and token '*' resolved as reduce (%left '*').
+    Conflict between rule 71 and token '/' resolved as reduce (%left '/').
+    Conflict between rule 71 and token MOD resolved as reduce (%left MOD).
+    Conflict between rule 71 and token DIV resolved as reduce (%left DIV).
+    Conflict between rule 71 and token AND resolved as reduce (%left AND).
+
+
+state 141
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-', '*', '/', MOD, DIV, AND]
+   70           | expression DIV expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-', '*', '/', MOD, DIV, AND]
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    $default  reduce using rule 70 (expression)
+
+    Conflict between rule 70 and token LE resolved as reduce (LE < DIV).
+    Conflict between rule 70 and token GE resolved as reduce (GE < DIV).
+    Conflict between rule 70 and token '<' resolved as reduce ('<' < DIV).
+    Conflict between rule 70 and token NE resolved as reduce (NE < DIV).
+    Conflict between rule 70 and token '>' resolved as reduce ('>' < DIV).
+    Conflict between rule 70 and token '=' resolved as reduce ('=' < DIV).
+    Conflict between rule 70 and token '+' resolved as reduce ('+' < DIV).
+    Conflict between rule 70 and token OR resolved as reduce (OR < DIV).
+    Conflict between rule 70 and token '-' resolved as reduce ('-' < DIV).
+    Conflict between rule 70 and token '*' resolved as reduce (%left '*').
+    Conflict between rule 70 and token '/' resolved as reduce (%left '/').
+    Conflict between rule 70 and token MOD resolved as reduce (%left MOD).
+    Conflict between rule 70 and token DIV resolved as reduce (%left DIV).
+    Conflict between rule 70 and token AND resolved as reduce (%left AND).
+
+
+state 142
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-', '*', '/', MOD, DIV, AND]
+   69           | expression AND expression .  [BY, DO, OF, THEN, TO, RBRACKET, ';', ',', ')', ']', '}', LE, GE, '<', NE, '>', '=', '+', OR, '-', '*', '/', MOD, DIV, AND]
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    $default  reduce using rule 69 (expression)
+
+    Conflict between rule 69 and token LE resolved as reduce (LE < AND).
+    Conflict between rule 69 and token GE resolved as reduce (GE < AND).
+    Conflict between rule 69 and token '<' resolved as reduce ('<' < AND).
+    Conflict between rule 69 and token NE resolved as reduce (NE < AND).
+    Conflict between rule 69 and token '>' resolved as reduce ('>' < AND).
+    Conflict between rule 69 and token '=' resolved as reduce ('=' < AND).
+    Conflict between rule 69 and token '+' resolved as reduce ('+' < AND).
+    Conflict between rule 69 and token OR resolved as reduce (OR < AND).
+    Conflict between rule 69 and token '-' resolved as reduce ('-' < AND).
+    Conflict between rule 69 and token '*' resolved as reduce (%left '*').
+    Conflict between rule 69 and token '/' resolved as reduce (%left '/').
+    Conflict between rule 69 and token MOD resolved as reduce (%left MOD).
+    Conflict between rule 69 and token DIV resolved as reduce (%left DIV).
+    Conflict between rule 69 and token AND resolved as reduce (%left AND).
+
+
+state 143
+
+   43 statement: LOOP statements END ';' .
+
+    $default  reduce using rule 43 (statement)
+
+
+state 144
+
+   38 statement: READ '(' lvalue lvalues . ')' ';'
+   50 lvalues: lvalues . ',' lvalue
+
+    ','  shift, and go to state 167
+    ')'  shift, and go to state 168
+
+
+state 145
+
+    5 statements: statements . statement
+   36 statement: . lvalue ASSIGN expression ';'
+   37          | . ID actual_params ';'
+   38          | . READ '(' lvalue lvalues ')' ';'
+   39          | . WRITE write_params ';'
+   40          | . IF expression THEN statements elsifs END ';'
+   41          | . IF expression THEN statements elsifs ELSE statements END ';'
+   42          | . WHILE expression DO statements END ';'
+   42          | WHILE expression DO statements . END ';'
+   43          | . LOOP statements END ';'
+   44          | . FOR ID ASSIGN expression TO expression DO statements END ';'
+   45          | . FOR ID ASSIGN expression TO expression BY expression DO statements END ';'
+   46          | . EXIT ';'
+   47          | . RETURN ';'
+   48          | . RETURN expression ';'
+   49          | . error ';'
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+
+    error   shift, and go to state 17
+    ID      shift, and go to state 18
+    END     shift, and go to state 169
+    FOR     shift, and go to state 20
+    IF      shift, and go to state 21
+    LOOP    shift, and go to state 22
+    READ    shift, and go to state 23
+    WHILE   shift, and go to state 24
+    WRITE   shift, and go to state 25
+    EXIT    shift, and go to state 26
+    RETURN  shift, and go to state 27
+
+    statement  go to state 28
+    lvalue     go to state 29
+
+
+state 146
+
+   55 write_params: '(' write_expr write_exprs . ')'
+   57 write_exprs: write_exprs . ',' write_expr
+
+    ','  shift, and go to state 170
+    ')'  shift, and go to state 171
+
+
+state 147
+
+   85 lvalue: lvalue '[' expression ']' .
+
+    $default  reduce using rule 85 (lvalue)
+
+
+state 148
+
+   36 statement: lvalue ASSIGN expression ';' .
+
+    $default  reduce using rule 36 (statement)
+
+
+state 149
+
+   19 ids: ids . ',' ID
+   35 fp_section: ID ids . ':' type
+
+    ':'  shift, and go to state 172
+    ','  shift, and go to state 120
+
+
+state 150
+
+   31 formal_params: '(' fp_section fp_sections . ')'
+   33 fp_sections: fp_sections . ';' fp_section
+
+    ';'  shift, and go to state 173
+    ')'  shift, and go to state 174
+
+
+state 151
+
+   23 procedure_decl: ID formal_params IS body . ';'
+
+    ';'  shift, and go to state 175
+
+
+state 152
+
+   24 procedure_decl: ID formal_params ':' type . IS body ';'
+
+    IS  shift, and go to state 176
+
+
+state 153
+
+   25 type: . ID
+   26     | . ARRAY OF type
+   26     | ARRAY OF . type
+   27     | . RECORD component components END
+
+    ID      shift, and go to state 115
+    ARRAY   shift, and go to state 116
+    RECORD  shift, and go to state 117
+
+    type  go to state 177
+
+
+state 154
+
+   30 component: ID . ':' type ';'
+
+    ':'  shift, and go to state 178
+
+
+state 155
+
+   27 type: RECORD component . components END
+   28 components: . components component
+   29           | .
+
+    $default  reduce using rule 29 (components)
+
+    components  go to state 179
+
+
+state 156
+
+   21 type_decl: ID IS type ';' .
+
+    $default  reduce using rule 21 (type_decl)
+
+
+state 157
+
+   17 var_decl: ID ids ':' type . ASSIGN expression ';'
+
+    ASSIGN  shift, and go to state 180
+
+
+state 158
+
+   19 ids: ids ',' ID .
+
+    $default  reduce using rule 19 (ids)
+
+
+state 159
+
+   16 var_decl: ID ids ASSIGN expression . ';'
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    ';'  shift, and go to state 181
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+
+state 160
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   89 expressions: expressions ',' . expression
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 182
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 161
+
+   87 actual_params: '(' expression expressions ')' .
+
+    $default  reduce using rule 87 (actual_params)
+
+
+state 162
+
+   44 statement: FOR ID ASSIGN expression TO . expression DO statements END ';'
+   45          | FOR ID ASSIGN expression TO . expression BY expression DO statements END ';'
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 183
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 163
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   98 array_value: expression OF . expression
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 184
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 164
+
+   94 array_values: LBRACKET array_value comma_sep_array_values . RBRACKET
+   95 comma_sep_array_values: comma_sep_array_values . ',' array_value
+
+    RBRACKET  shift, and go to state 185
+    ','       shift, and go to state 186
+
+
+state 165
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   91 comp_values: '{' ID ASSIGN . expression assign_expression_to_id_s '}'
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 187
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 166
+
+   40 statement: IF expression THEN statements elsifs . END ';'
+   41          | IF expression THEN statements elsifs . ELSE statements END ';'
+   52 elsifs: elsifs . elsif
+   54 elsif: . ELSIF expression THEN statements
+
+    ELSE   shift, and go to state 188
+    ELSIF  shift, and go to state 189
+    END    shift, and go to state 190
+
+    elsif  go to state 191
+
+
+state 167
+
+   50 lvalues: lvalues ',' . lvalue
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+
+    ID  shift, and go to state 98
+
+    lvalue  go to state 192
+
+
+state 168
+
+   38 statement: READ '(' lvalue lvalues ')' . ';'
+
+    ';'  shift, and go to state 193
+
+
+state 169
+
+   42 statement: WHILE expression DO statements END . ';'
+
+    ';'  shift, and go to state 194
+
+
+state 170
+
+   57 write_exprs: write_exprs ',' . write_expr
+   59 write_expr: . STRING
+   60           | . expression
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    STRING   shift, and go to state 101
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    write_expr  go to state 195
+    expression  go to state 104
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 171
+
+   55 write_params: '(' write_expr write_exprs ')' .
+
+    $default  reduce using rule 55 (write_params)
+
+
+state 172
+
+   25 type: . ID
+   26     | . ARRAY OF type
+   27     | . RECORD component components END
+   35 fp_section: ID ids ':' . type
+
+    ID      shift, and go to state 115
+    ARRAY   shift, and go to state 116
+    RECORD  shift, and go to state 117
+
+    type  go to state 196
+
+
+state 173
+
+   33 fp_sections: fp_sections ';' . fp_section
+   35 fp_section: . ID ids ':' type
+
+    ID  shift, and go to state 110
+
+    fp_section  go to state 197
+
+
+state 174
+
+   31 formal_params: '(' fp_section fp_sections ')' .
+
+    $default  reduce using rule 31 (formal_params)
+
+
+state 175
+
+   23 procedure_decl: ID formal_params IS body ';' .
+
+    $default  reduce using rule 23 (procedure_decl)
+
+
+state 176
+
+    2 body: . declarations PROGRAMBEGIN statements END
+    3 declarations: . declarations declaration
+    4             | .
+   24 procedure_decl: ID formal_params ':' type IS . body ';'
+
+    $default  reduce using rule 4 (declarations)
+
+    body          go to state 198
+    declarations  go to state 6
+
+
+state 177
+
+   26 type: ARRAY OF type .
+
+    $default  reduce using rule 26 (type)
+
+
+state 178
+
+   25 type: . ID
+   26     | . ARRAY OF type
+   27     | . RECORD component components END
+   30 component: ID ':' . type ';'
+
+    ID      shift, and go to state 115
+    ARRAY   shift, and go to state 116
+    RECORD  shift, and go to state 117
+
+    type  go to state 199
+
+
+state 179
+
+   27 type: RECORD component components . END
+   28 components: components . component
+   30 component: . ID ':' type ';'
+
+    ID   shift, and go to state 154
+    END  shift, and go to state 200
+
+    component  go to state 201
+
+
+state 180
+
+   17 var_decl: ID ids ':' type ASSIGN . expression ';'
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 202
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 181
+
+   16 var_decl: ID ids ASSIGN expression ';' .
+
+    $default  reduce using rule 16 (var_decl)
+
+
+state 182
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+   89 expressions: expressions ',' expression .  [',', ')']
+
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+    $default  reduce using rule 89 (expressions)
+
+
+state 183
+
+   44 statement: FOR ID ASSIGN expression TO expression . DO statements END ';'
+   45          | FOR ID ASSIGN expression TO expression . BY expression DO statements END ';'
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    BY   shift, and go to state 203
+    DO   shift, and go to state 204
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+
+state 184
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+   98 array_value: expression OF expression .  [RBRACKET, ',']
+
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+    $default  reduce using rule 98 (array_value)
+
+
+state 185
+
+   94 array_values: LBRACKET array_value comma_sep_array_values RBRACKET .
+
+    $default  reduce using rule 94 (array_values)
+
+
+state 186
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   95 comma_sep_array_values: comma_sep_array_values ',' . array_value
+   97 array_value: . expression
+   98            | . expression OF expression
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression   go to state 124
+    lvalue       go to state 50
+    array_value  go to state 205
+    number       go to state 51
+
+
+state 187
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+   91 comp_values: '{' ID ASSIGN expression . assign_expression_to_id_s '}'
+   92 assign_expression_to_id_s: . assign_expression_to_id_s ';' ID ASSIGN expression
+   93                          | .  [';', '}']
+
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+    $default  reduce using rule 93 (assign_expression_to_id_s)
+
+    assign_expression_to_id_s  go to state 206
+
+
+state 188
+
+    5 statements: . statements statement
+    6           | .
+   41 statement: IF expression THEN statements elsifs ELSE . statements END ';'
+
+    $default  reduce using rule 6 (statements)
+
+    statements  go to state 207
+
+
+state 189
+
+   54 elsif: ELSIF . expression THEN statements
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 208
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 190
+
+   40 statement: IF expression THEN statements elsifs END . ';'
+
+    ';'  shift, and go to state 209
+
+
+state 191
+
+   52 elsifs: elsifs elsif .
+
+    $default  reduce using rule 52 (elsifs)
+
+
+state 192
+
+   50 lvalues: lvalues ',' lvalue .  [',', ')']
+   85 lvalue: lvalue . '[' expression ']'
+   86       | lvalue . '.' ID
+
+    '.'  shift, and go to state 60
+    '['  shift, and go to state 61
+
+    $default  reduce using rule 50 (lvalues)
+
+
+state 193
+
+   38 statement: READ '(' lvalue lvalues ')' ';' .
+
+    $default  reduce using rule 38 (statement)
+
+
+state 194
+
+   42 statement: WHILE expression DO statements END ';' .
+
+    $default  reduce using rule 42 (statement)
+
+
+state 195
+
+   57 write_exprs: write_exprs ',' write_expr .
+
+    $default  reduce using rule 57 (write_exprs)
+
+
+state 196
+
+   35 fp_section: ID ids ':' type .
+
+    $default  reduce using rule 35 (fp_section)
+
+
+state 197
+
+   33 fp_sections: fp_sections ';' fp_section .
+
+    $default  reduce using rule 33 (fp_sections)
+
+
+state 198
+
+   24 procedure_decl: ID formal_params ':' type IS body . ';'
+
+    ';'  shift, and go to state 210
+
+
+state 199
+
+   30 component: ID ':' type . ';'
+
+    ';'  shift, and go to state 211
+
+
+state 200
+
+   27 type: RECORD component components END .
+
+    $default  reduce using rule 27 (type)
+
+
+state 201
+
+   28 components: components component .
+
+    $default  reduce using rule 28 (components)
+
+
+state 202
+
+   17 var_decl: ID ids ':' type ASSIGN expression . ';'
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    ';'  shift, and go to state 212
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+
+state 203
+
+   45 statement: FOR ID ASSIGN expression TO expression BY . expression DO statements END ';'
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 213
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 204
+
+    5 statements: . statements statement
+    6           | .
+   44 statement: FOR ID ASSIGN expression TO expression DO . statements END ';'
+
+    $default  reduce using rule 6 (statements)
+
+    statements  go to state 214
+
+
+state 205
+
+   95 comma_sep_array_values: comma_sep_array_values ',' array_value .
+
+    $default  reduce using rule 95 (comma_sep_array_values)
+
+
+state 206
+
+   91 comp_values: '{' ID ASSIGN expression assign_expression_to_id_s . '}'
+   92 assign_expression_to_id_s: assign_expression_to_id_s . ';' ID ASSIGN expression
+
+    ';'  shift, and go to state 215
+    '}'  shift, and go to state 216
+
+
+state 207
+
+    5 statements: statements . statement
+   36 statement: . lvalue ASSIGN expression ';'
+   37          | . ID actual_params ';'
+   38          | . READ '(' lvalue lvalues ')' ';'
+   39          | . WRITE write_params ';'
+   40          | . IF expression THEN statements elsifs END ';'
+   41          | . IF expression THEN statements elsifs ELSE statements END ';'
+   41          | IF expression THEN statements elsifs ELSE statements . END ';'
+   42          | . WHILE expression DO statements END ';'
+   43          | . LOOP statements END ';'
+   44          | . FOR ID ASSIGN expression TO expression DO statements END ';'
+   45          | . FOR ID ASSIGN expression TO expression BY expression DO statements END ';'
+   46          | . EXIT ';'
+   47          | . RETURN ';'
+   48          | . RETURN expression ';'
+   49          | . error ';'
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+
+    error   shift, and go to state 17
+    ID      shift, and go to state 18
+    END     shift, and go to state 217
+    FOR     shift, and go to state 20
+    IF      shift, and go to state 21
+    LOOP    shift, and go to state 22
+    READ    shift, and go to state 23
+    WHILE   shift, and go to state 24
+    WRITE   shift, and go to state 25
+    EXIT    shift, and go to state 26
+    RETURN  shift, and go to state 27
+
+    statement  go to state 28
+    lvalue     go to state 29
+
+
+state 208
+
+   54 elsif: ELSIF expression . THEN statements
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    THEN  shift, and go to state 218
+    LE    shift, and go to state 83
+    GE    shift, and go to state 84
+    '<'   shift, and go to state 85
+    NE    shift, and go to state 86
+    '>'   shift, and go to state 87
+    '='   shift, and go to state 88
+    '+'   shift, and go to state 89
+    OR    shift, and go to state 90
+    '-'   shift, and go to state 91
+    '*'   shift, and go to state 92
+    '/'   shift, and go to state 93
+    MOD   shift, and go to state 94
+    DIV   shift, and go to state 95
+    AND   shift, and go to state 96
+
+
+state 209
+
+   40 statement: IF expression THEN statements elsifs END ';' .
+
+    $default  reduce using rule 40 (statement)
+
+
+state 210
+
+   24 procedure_decl: ID formal_params ':' type IS body ';' .
+
+    $default  reduce using rule 24 (procedure_decl)
+
+
+state 211
+
+   30 component: ID ':' type ';' .
+
+    $default  reduce using rule 30 (component)
+
+
+state 212
+
+   17 var_decl: ID ids ':' type ASSIGN expression ';' .
+
+    $default  reduce using rule 17 (var_decl)
+
+
+state 213
+
+   45 statement: FOR ID ASSIGN expression TO expression BY expression . DO statements END ';'
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+
+    DO   shift, and go to state 219
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+
+state 214
+
+    5 statements: statements . statement
+   36 statement: . lvalue ASSIGN expression ';'
+   37          | . ID actual_params ';'
+   38          | . READ '(' lvalue lvalues ')' ';'
+   39          | . WRITE write_params ';'
+   40          | . IF expression THEN statements elsifs END ';'
+   41          | . IF expression THEN statements elsifs ELSE statements END ';'
+   42          | . WHILE expression DO statements END ';'
+   43          | . LOOP statements END ';'
+   44          | . FOR ID ASSIGN expression TO expression DO statements END ';'
+   44          | FOR ID ASSIGN expression TO expression DO statements . END ';'
+   45          | . FOR ID ASSIGN expression TO expression BY expression DO statements END ';'
+   46          | . EXIT ';'
+   47          | . RETURN ';'
+   48          | . RETURN expression ';'
+   49          | . error ';'
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+
+    error   shift, and go to state 17
+    ID      shift, and go to state 18
+    END     shift, and go to state 220
+    FOR     shift, and go to state 20
+    IF      shift, and go to state 21
+    LOOP    shift, and go to state 22
+    READ    shift, and go to state 23
+    WHILE   shift, and go to state 24
+    WRITE   shift, and go to state 25
+    EXIT    shift, and go to state 26
+    RETURN  shift, and go to state 27
+
+    statement  go to state 28
+    lvalue     go to state 29
+
+
+state 215
+
+   92 assign_expression_to_id_s: assign_expression_to_id_s ';' . ID ASSIGN expression
+
+    ID  shift, and go to state 221
+
+
+state 216
+
+   91 comp_values: '{' ID ASSIGN expression assign_expression_to_id_s '}' .
+
+    $default  reduce using rule 91 (comp_values)
+
+
+state 217
+
+   41 statement: IF expression THEN statements elsifs ELSE statements END . ';'
+
+    ';'  shift, and go to state 222
+
+
+state 218
+
+    5 statements: . statements statement
+    6           | .
+   54 elsif: ELSIF expression THEN . statements
+
+    $default  reduce using rule 6 (statements)
+
+    statements  go to state 223
+
+
+state 219
+
+    5 statements: . statements statement
+    6           | .
+   45 statement: FOR ID ASSIGN expression TO expression BY expression DO . statements END ';'
+
+    $default  reduce using rule 6 (statements)
+
+    statements  go to state 224
+
+
+state 220
+
+   44 statement: FOR ID ASSIGN expression TO expression DO statements END . ';'
+
+    ';'  shift, and go to state 225
+
+
+state 221
+
+   92 assign_expression_to_id_s: assign_expression_to_id_s ';' ID . ASSIGN expression
+
+    ASSIGN  shift, and go to state 226
+
+
+state 222
+
+   41 statement: IF expression THEN statements elsifs ELSE statements END ';' .
+
+    $default  reduce using rule 41 (statement)
+
+
+state 223
+
+    5 statements: statements . statement
+   36 statement: . lvalue ASSIGN expression ';'
+   37          | . ID actual_params ';'
+   38          | . READ '(' lvalue lvalues ')' ';'
+   39          | . WRITE write_params ';'
+   40          | . IF expression THEN statements elsifs END ';'
+   41          | . IF expression THEN statements elsifs ELSE statements END ';'
+   42          | . WHILE expression DO statements END ';'
+   43          | . LOOP statements END ';'
+   44          | . FOR ID ASSIGN expression TO expression DO statements END ';'
+   45          | . FOR ID ASSIGN expression TO expression BY expression DO statements END ';'
+   46          | . EXIT ';'
+   47          | . RETURN ';'
+   48          | . RETURN expression ';'
+   49          | . error ';'
+   54 elsif: ELSIF expression THEN statements .  [ELSE, ELSIF, END]
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+
+    error   shift, and go to state 17
+    ID      shift, and go to state 18
+    FOR     shift, and go to state 20
+    IF      shift, and go to state 21
+    LOOP    shift, and go to state 22
+    READ    shift, and go to state 23
+    WHILE   shift, and go to state 24
+    WRITE   shift, and go to state 25
+    EXIT    shift, and go to state 26
+    RETURN  shift, and go to state 27
+
+    ELSE   reduce using rule 54 (elsif)
+    ELSIF  reduce using rule 54 (elsif)
+    END    reduce using rule 54 (elsif)
+
+    statement  go to state 28
+    lvalue     go to state 29
+
+
+state 224
+
+    5 statements: statements . statement
+   36 statement: . lvalue ASSIGN expression ';'
+   37          | . ID actual_params ';'
+   38          | . READ '(' lvalue lvalues ')' ';'
+   39          | . WRITE write_params ';'
+   40          | . IF expression THEN statements elsifs END ';'
+   41          | . IF expression THEN statements elsifs ELSE statements END ';'
+   42          | . WHILE expression DO statements END ';'
+   43          | . LOOP statements END ';'
+   44          | . FOR ID ASSIGN expression TO expression DO statements END ';'
+   45          | . FOR ID ASSIGN expression TO expression BY expression DO statements END ';'
+   45          | FOR ID ASSIGN expression TO expression BY expression DO statements . END ';'
+   46          | . EXIT ';'
+   47          | . RETURN ';'
+   48          | . RETURN expression ';'
+   49          | . error ';'
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+
+    error   shift, and go to state 17
+    ID      shift, and go to state 18
+    END     shift, and go to state 227
+    FOR     shift, and go to state 20
+    IF      shift, and go to state 21
+    LOOP    shift, and go to state 22
+    READ    shift, and go to state 23
+    WHILE   shift, and go to state 24
+    WRITE   shift, and go to state 25
+    EXIT    shift, and go to state 26
+    RETURN  shift, and go to state 27
+
+    statement  go to state 28
+    lvalue     go to state 29
+
+
+state 225
+
+   44 statement: FOR ID ASSIGN expression TO expression DO statements END ';' .
+
+    $default  reduce using rule 44 (statement)
+
+
+state 226
+
+   61 expression: . number
+   62           | . lvalue
+   63           | . '(' expression ')'
+   64           | . '+' expression
+   65           | . '-' expression
+   66           | . NOT expression
+   67           | . expression '*' expression
+   68           | . expression '/' expression
+   69           | . expression AND expression
+   70           | . expression DIV expression
+   71           | . expression MOD expression
+   72           | . expression '+' expression
+   73           | . expression '-' expression
+   74           | . expression OR expression
+   75           | . expression '>' expression
+   76           | . expression '<' expression
+   77           | . expression '=' expression
+   78           | . expression GE expression
+   79           | . expression LE expression
+   80           | . expression NE expression
+   81           | . ID actual_params
+   82           | . ID comp_values
+   83           | . ID array_values
+   84 lvalue: . ID
+   85       | . lvalue '[' expression ']'
+   86       | . lvalue '.' ID
+   92 assign_expression_to_id_s: assign_expression_to_id_s ';' ID ASSIGN . expression
+   99 number: . INTEGER
+  100       | . REAL
+
+    INTEGER  shift, and go to state 42
+    REAL     shift, and go to state 43
+    ID       shift, and go to state 44
+    '('      shift, and go to state 45
+    NOT      shift, and go to state 46
+    '+'      shift, and go to state 47
+    '-'      shift, and go to state 48
+
+    expression  go to state 228
+    lvalue      go to state 50
+    number      go to state 51
+
+
+state 227
+
+   45 statement: FOR ID ASSIGN expression TO expression BY expression DO statements END . ';'
+
+    ';'  shift, and go to state 229
+
+
+state 228
+
+   67 expression: expression . '*' expression
+   68           | expression . '/' expression
+   69           | expression . AND expression
+   70           | expression . DIV expression
+   71           | expression . MOD expression
+   72           | expression . '+' expression
+   73           | expression . '-' expression
+   74           | expression . OR expression
+   75           | expression . '>' expression
+   76           | expression . '<' expression
+   77           | expression . '=' expression
+   78           | expression . GE expression
+   79           | expression . LE expression
+   80           | expression . NE expression
+   92 assign_expression_to_id_s: assign_expression_to_id_s ';' ID ASSIGN expression .  [';', '}']
+
+    LE   shift, and go to state 83
+    GE   shift, and go to state 84
+    '<'  shift, and go to state 85
+    NE   shift, and go to state 86
+    '>'  shift, and go to state 87
+    '='  shift, and go to state 88
+    '+'  shift, and go to state 89
+    OR   shift, and go to state 90
+    '-'  shift, and go to state 91
+    '*'  shift, and go to state 92
+    '/'  shift, and go to state 93
+    MOD  shift, and go to state 94
+    DIV  shift, and go to state 95
+    AND  shift, and go to state 96
+
+    $default  reduce using rule 92 (assign_expression_to_id_s)
+
+
+state 229
+
+   45 statement: FOR ID ASSIGN expression TO expression BY expression DO statements END ';' .
+
+    $default  reduce using rule 45 (statement)
