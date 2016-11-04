@@ -6,7 +6,7 @@ LEX = flex
 all: 					compiler pcat.output
 
 pcat.tab.h  pcat.tab.c: 	pcat.y
-							$(YACC) -d -t pcat.y
+							$(YACC) -d pcat.y
 
 pcat.output: 	pcat.y
 							$(YACC) -r all pcat.y
