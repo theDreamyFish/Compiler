@@ -136,7 +136,7 @@ var_decl:
 		}
 	|	error ';' {
 			$$ = new_node("error var_decl");
-			yyerror("syntax error in var declaration")
+			yyerror("syntax error in var declaration");
 		}
 	;
 
@@ -569,7 +569,8 @@ nodeType* dfs(nodeType *now, int depth) {
 }
 void dfs_print(nodeType *now, int depth) {
 	int i;
-{
+	if (printable(now)) {
+	
 		for (i = 0; i < depth-1; ++i) {
 			fprintf(stdout, "|   ");
 		}
@@ -577,7 +578,20 @@ void dfs_print(nodeType *now, int depth) {
 			fprintf(stdout, "|---");
 		}
 		if (now->type==typeTerminal) {
-			fprintf(stdout, "< %s >\n", now->t.label);
+			if(strcmp(now->t.label,"INTEGER")==0)
+				fprintf(stdout, "< %d >\n", now->t.v_int);
+			else
+			if(strcmp(now->t.label,"REAL")==0)
+				fprintf(stdout, "< %lf >\n", now->t.v_real);
+			else
+			if(strcmp(now->t.label,"ID")==0)
+				fprintf(stdout, "< %s >\n", now->t.v_id);
+			else
+			if(strcmp(now->t.label,"STRING")==0)
+				fprintf(stdout, "< %s >\n", now->t.v_string);
+			else
+				fprintf(stdout, "< %s >\n", now->t.label);
+			
 			return;
 		}
 		fprintf(stdout, "%s\n", now->nt.label);
@@ -585,6 +599,13 @@ void dfs_print(nodeType *now, int depth) {
 			dfs_print(now->nt.op[i], depth + 1);
 		}
 	}
+	else{
+		if (now->type==typeNonterminal) {
+			for (i = 0; i < now->nt.nops; ++i) 
+				dfs_print(now->nt.op[i], depth);
+		}
+	}
+
 }
 
 int main(int argc,char* argv[]){
