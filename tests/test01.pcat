@@ -2,7 +2,7 @@
 (*   test var decls.     *)
 (*                       *)
 PROGRAM IS
-    VAR i, j : INTEGER := 1; 
+    VAR i, j : INTEGER :=;
     VAR x : REAL := 2.0;
     VAR y : REAL := 3.0;
 BEGIN 

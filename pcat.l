@@ -1,18 +1,17 @@
 %{
-#include <stdlib.h>
-#include <string.h>
 #include "pcat.hpp"
 #include "pcat.tab.h"
 void yyerror(char *s);
 
 int line_num = 1;
 int col_num = 1;
-char str_buffer[256];
+char str_buffer[300];
 int str_len;
 %}
 
 %x _COMMENTS_
 %x _STRING_
+%x _STRINGERROR_
 
 digit [0-9]
 letter [a-zA-Z]
@@ -38,7 +37,11 @@ doubleop ":="|"<="|">="|"<>"|"[<"|">]"|\\
 						BEGIN INITIAL;
 						col_num += yyleng;
 					}
-					/* [TODO] _COMMENTS_ EOF */
+
+<_COMMENTS_><<EOF>>	{	
+						BEGIN INITIAL;
+						yyerror ("EOF in comments");
+					}
 
 {digit}+			{
 						printf("GET INTEGER %s\n", yytext);
@@ -46,12 +49,14 @@ doubleop ":="|"<="|">="|"<>"|"[<"|">]"|\\
 						if (temp > 2147483647l) {
 							yyerror("Integer too long");
 						}
-						yylval.v_nptr = malloc(sizeof(nodeType));
-						yylval.v_nptr->type = typeTerminal;
-						yylval.v_nptr->t.label = strdup("INTEGER");
-						yylval.v_nptr->t.v_int = temp;
-						col_num += yyleng;
-						return INTEGER;
+						else{
+							yylval.v_nptr = malloc(sizeof(nodeType));
+							yylval.v_nptr->type = typeTerminal;
+							yylval.v_nptr->t.label = strdup("INTEGER");
+							yylval.v_nptr->t.v_int = temp;
+							col_num += yyleng;
+							return INTEGER;
+						}
 					}
 
 {digit}+\.{digit}*	{
@@ -199,13 +204,16 @@ doubleop ":="|"<="|">="|"<>"|"[<"|">]"|\\
 
 {letter}+({letter}|{digit})*		{
 									printf("GET ID %s\n", yytext);
-									if (yyleng >257) yyerror("ID too long.");
-									yylval.v_nptr = malloc(sizeof(nodeType));
-									yylval.v_nptr->type = typeTerminal;
-									yylval.v_nptr->t.label = strdup("ID");
-									yylval.v_nptr->t.v_id = strdup(yytext);
-									col_num += yyleng;
-									return ID;
+									if (yyleng >255) 
+										yyerror("ID too long.");
+									else{
+										yylval.v_nptr = malloc(sizeof(nodeType));
+										yylval.v_nptr->type = typeTerminal;
+										yylval.v_nptr->t.label = strdup("ID");
+										yylval.v_nptr->t.v_id = strdup(yytext);
+										col_num += yyleng;
+										return ID;
+									}
 								}
 
 {singleop}	{
@@ -265,16 +273,25 @@ doubleop ":="|"<="|">="|"<>"|"[<"|">]"|\\
 					}
 
 <_STRING_>[^\"\t\n]		{
-							str_buffer[str_len] = *yytext;
-							str_len += 1;
+							if (str_len > 254){
+								yyerror("string too long");
+								BEGIN _STRINGERROR_;
+							}
+							else {
+								str_buffer[str_len] = *yytext;
+								str_len += 1;
+							}
 							col_num += yyleng;
 						}
 
 <_STRING_>\"		{
+						str_buffer[str_len] = '\0';
 						BEGIN INITIAL;
+						yylval.v_nptr = malloc(sizeof(nodeType));
 						yylval.v_nptr->type = typeTerminal;
 						yylval.v_nptr->t.label = strdup("STRING");
 						yylval.v_nptr->t.v_string = strdup(str_buffer);
+						printf ("GET %s", yylval.v_nptr->t.v_string);
 						col_num += yyleng;
 						return STRING;
 					}
@@ -285,10 +302,31 @@ doubleop ":="|"<="|">="|"<>"|"[<"|">]"|\\
 							col_num = 1;
 							line_num += 1;
 					}
+<_STRING_><<EOF>> {
+										yyerror("string with no end");
+										BEGIN INITIAL;
+								}
 <_STRING_>.			{
 							yyerror("invalid character in string");
+							BEGIN _STRINGERROR_;
 							col_num += yyleng;
 					}
+
+<_STRINGERROR_>\"	{
+									BEGIN INITIAL;
+									col_num += yyleng;
+								}
+<_STRINGERROR_>\n {
+									BEGIN INITIAL;
+									col_num = 1;
+									line_num += 1;
+								}
+<_STRINGERROR_><<EOF>> {
+													BEGIN INITIAL;
+												}
+<_STRINGERROR_>.  {
+									col_num += yyleng;
+								}
 
 [ \t] 		{
 				col_num += yyleng;
@@ -299,7 +337,7 @@ doubleop ":="|"<="|">="|"<>"|"[<"|">]"|\\
 			}
 
 .			{
-				yyerror("flex error");
+				yyerror("invalid character");
 				col_num += yyleng;
 			}
 

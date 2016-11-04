@@ -51,8 +51,14 @@
 %%
 
 program:
-		PROGRAM IS body ';' {
+		PROGRAM IS body ';'{
 			$$ = combine("program", 4, $1, $2, $3, $4);
+			head=dfs($$,0);
+			dfs_print(head, 0);
+		}
+	| 	error {
+			$$ = new_node("error programe");
+			yyerror("syntax error in program");
 			head=dfs($$,0);
 			dfs_print(head, 0);
 		}
@@ -128,6 +134,10 @@ var_decl:
 	|	ID ids ':' type ASSIGN expression ';' {
 			$$ = combine("var_decl", 7, $1, $2, $3, $4, $5, $6, $7);
 		}
+	|	error ';' {
+			$$ = new_node("error var_decl");
+			yyerror("syntax error in var declaration");
+		}
 	;
 
 ids:
@@ -142,6 +152,9 @@ ids:
 type_decl:
 		ID IS type ';' {
 			$$ = combine("type_decl", 4, $1, $2, $3, $4);
+		}
+	|	error ';'{
+			yyerror("syntax error in type declaration");
 		}
 	;
 
@@ -242,6 +255,9 @@ statement:
 		}
 	|	RETURN expression ';' {
 			$$ = combine("statement", 3, $1, $2, $3);
+		}
+	|	error ';' {
+			yyerror(" error in statements");
 		}
 
 lvalues:
@@ -488,7 +504,7 @@ nodeType *node_copy(nodeType *node) {
 }
 
 void yyerror(char *s) {
-	fprintf(stdout, "%s\n", s);
+	fprintf(stdout, "line %d col %d: %s\n", line_num, col_num, s);
 }
 
 int printable(nodeType *node) {
@@ -553,7 +569,8 @@ nodeType* dfs(nodeType *now, int depth) {
 }
 void dfs_print(nodeType *now, int depth) {
 	int i;
-{
+	if (printable(now)) {
+	
 		for (i = 0; i < depth-1; ++i) {
 			fprintf(stdout, "|   ");
 		}
@@ -561,7 +578,20 @@ void dfs_print(nodeType *now, int depth) {
 			fprintf(stdout, "|---");
 		}
 		if (now->type==typeTerminal) {
-			fprintf(stdout, "< %s >\n", now->t.label);
+			if(strcmp(now->t.label,"INTEGER")==0)
+				fprintf(stdout, "< %d >\n", now->t.v_int);
+			else
+			if(strcmp(now->t.label,"REAL")==0)
+				fprintf(stdout, "< %lf >\n", now->t.v_real);
+			else
+			if(strcmp(now->t.label,"ID")==0)
+				fprintf(stdout, "< %s >\n", now->t.v_id);
+			else
+			if(strcmp(now->t.label,"STRING")==0)
+				fprintf(stdout, "< %s >\n", now->t.v_string);
+			else
+				fprintf(stdout, "< %s >\n", now->t.label);
+			
 			return;
 		}
 		fprintf(stdout, "%s\n", now->nt.label);
@@ -569,6 +599,13 @@ void dfs_print(nodeType *now, int depth) {
 			dfs_print(now->nt.op[i], depth + 1);
 		}
 	}
+	else{
+		if (now->type==typeNonterminal) {
+			for (i = 0; i < now->nt.nops; ++i) 
+				dfs_print(now->nt.op[i], depth);
+		}
+	}
+
 }
 
 int main(int argc,char* argv[]){
