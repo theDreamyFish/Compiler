@@ -51,15 +51,21 @@
 %%
 
 program:
-		PROGRAM IS body ';'{
+		PROGRAM IS body ';' {
 			$$ = combine("program", 4, $1, $2, $3, $4);
-			head=dfs($$,0);
+			head = dfs($$, 0);
 			dfs_print(head, 0);
 		}
-	| 	error {
-			$$ = new_node("error programe");
-			yyerror("syntax error in program");
-			head=dfs($$,0);
+	|	PROGRAM IS error ';'{
+			$$ = combine("program", 4, $1, $2, new_node("error body"), $4);
+			yyerror("syntax error in body");
+			head = dfs($$, 0);
+			dfs_print(head, 0);			
+		}
+	| error ';' {
+			$$ = new_node("error program");
+			yyerror("syntax error in program");	
+			head = dfs($$, 0);
 			dfs_print(head, 0);
 		}
 	;
@@ -153,7 +159,8 @@ type_decl:
 		ID IS type ';' {
 			$$ = combine("type_decl", 4, $1, $2, $3, $4);
 		}
-	|	error ';'{
+	| error ';'{
+			$$ = new_node("error type declaration");
 			yyerror("syntax error in type declaration");
 		}
 	;
@@ -164,6 +171,10 @@ procedure_decl:
 		}
 	|	ID formal_params ':' type IS body ';' {
 			$$ = combine("procedure_decl", 7, $1, $2, $3, $4, $5, $6, $7);
+		}
+	|	error ';'{
+			$$ = new_node("error procedure declaration");
+			yyerror("syntax error in procedure declaration");
 		}
 	;
 
@@ -176,6 +187,10 @@ type:
 		}
 	|	RECORD component components END  {
 			$$ = combine("type", 4, $1, $2, $3, $4);
+		}
+	| RECORD error END {
+			$$ = combine("type", 3, $1, new_node("error component"), $3);
+			yyerror("syntax error in component");
 		}
 	;
 
@@ -192,6 +207,10 @@ component:
 		ID ':' type ';' {
 			$$ = combine("component", 4, $1, $2, $3, $4);
 		}
+	|	error ';'{
+			$$ = new_node("error component");
+			yyerror("syntax error in component");
+		}
 	;
 
 formal_params:
@@ -201,6 +220,11 @@ formal_params:
 	|	'(' ')' {
 			$$ = combine("formal_params", 2, $1, $2);
 		}
+	| '(' error ')' {
+			$$ = combine("type", 3, $1, new_node("error fp_section"), $3);
+			yyerror("syntax error in fp_section");
+		}
+	;
 
 fp_sections:
 		fp_sections ';' fp_section {
@@ -257,8 +281,10 @@ statement:
 			$$ = combine("statement", 3, $1, $2, $3);
 		}
 	|	error ';' {
-			yyerror(" error in statements");
+			$$ = new_node("error statement");
+			yyerror(" error in statement");
 		}
+	;
 
 lvalues:
 		lvalues ',' lvalue {
@@ -282,6 +308,10 @@ elsif:
 		ELSIF expression THEN statements {
 			$$ = combine("elsif", 4, $1, $2, $3, $4);
 		}
+	|	ELSIF error THEN statements{
+			$$ = combine("type", 4, $1, new_node("error experession"), $3, $4);
+			yyerror("syntax error in expression");
+		}
 	;
 
 write_params:
@@ -290,6 +320,10 @@ write_params:
 		}
 	|	'(' ')' {
 			$$ = combine("write_params", 2, $1, $2);
+		}
+	|  '(' error ')' {
+			$$ = combine("type", 3, $1, new_node("error write_expr"), $3);
+			yyerror("syntax error in write_expr");
 		}
 	;
 
@@ -393,6 +427,10 @@ lvalue:
 	|	lvalue '.' ID {
 			$$ = combine("lvalue", 3, $1, $2, $3);
 		}
+	| lvalue '[' error ']'{
+			$$ = combine("error lvalue", 4, $1, $2, new_node("error expression"), $4);
+			yyerror("syntax error in lvalue");
+		}
 	;
 
 actual_params:
@@ -401,6 +439,10 @@ actual_params:
 		}
 	|	'(' ')' {
 			$$ = combine("actual_params", 2, $1, $2);
+		}
+	| '(' error ')'{
+			$$ = combine("error actual_params", 3, $1, new_node("error expression"), $3);
+			yyerror("syntax error in actual_params");
 		}
 	;
 
@@ -504,7 +546,13 @@ nodeType *node_copy(nodeType *node) {
 }
 
 void yyerror(char *s) {
-	fprintf(stdout, "line %d col %d: %s\n", line_num, col_num, s);
+	if (strcmp(s, "syntax error") == 0) return;	
+	if (line_num == 1)
+	 fprintf(stdout, "line %d col %d: %s\n", line_num, col_num, s);
+	else{
+		fprintf(stdout, "line %d col %d: %s:\n%s\n", line_num, col_num, s, line_buffer);
+		fprintf(stdout, "%*s\n",col_num,"^");
+	}
 }
 
 int printable(nodeType *node) {
