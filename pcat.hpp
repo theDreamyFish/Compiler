@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#define TABLESIZE 1000
+#define STACKDEPTH 100
 
 typedef enum { typeTerminal, typeNonterminal } nodeEnum;
-
+typedef enum { nullv, intv, realv, boolv, stringv} varEnum;
 
 /* Terminal */
 typedef struct {
@@ -36,6 +38,47 @@ typedef struct nodeTypeTag {
 		nonterminalNodeType nt;
 	};
 } nodeType;
+
+
+typedef struct variable{
+	varEnum type;
+	union{
+		int nullv; 
+		int intv;
+		double realv;
+		int boolv;
+		char *stringv;
+	};
+} var;
+
+typedef struct varElementStruct{
+	nodeEnum type;
+	union {
+		var	t;
+		struct varNoneTerminal{
+			char *label;
+			int nops;
+			struct varElementStruct *op[1];
+		} nt;	
+	};
+} varElement;
+
+typedef struct {
+	char *label;
+	nodeType *address;
+} nameElement;
+
+typedef struct contextStruct{ 
+	struct contextStruct *callFrom;//for main(), callFrom = NULL
+	nodeType *address;
+	nameElement typeTable[TABLESIZE];
+	nameElement procedureTable[TABLESIZE];
+	varElement varTable[TABLESIZE];
+	int typeTableSize;
+	int procedureTableSize;
+	int varTableSize;
+	int depth;	
+} context;
 
 int line_num;
 int col_num;

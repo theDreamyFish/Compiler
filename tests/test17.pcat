@@ -4,22 +4,22 @@
 PROGRAM IS 
     VAR I, ANSWER : INTEGER := 0;
     PROCEDURE FACTORIAL() IS
-	VAR J : INTEGER := 0;
-	PROCEDURE 
-          FACT() IS BEGIN
-	    IF J <= I THEN MULT(); J := J + 1; FACT(); END;
-	  END;
-	  MULT() IS
-	    VAR I : INTEGER := 0;
-	  BEGIN
-	    I := ANSWER;
+		VAR J : INTEGER := 0;
+		PROCEDURE 
+	    FACT() IS BEGIN
+	    	IF J <= I THEN MULT(); J := J + 1; FACT(); END;
+	  	END;
+	  	MULT() IS
+	    	VAR I : INTEGER := 0;
+	  	BEGIN
+	    	I := ANSWER;
             I := I * J;
             ANSWER := I;
-	  END;
+	  	END;
     BEGIN
-	ANSWER := 1;
-	J := 1;
-	FACT();
+		ANSWER := 1;
+		J := 1;
+		FACT();
     END;
 BEGIN 
     WRITE ("The first 5 factorials are (in ascending order):");
