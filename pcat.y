@@ -659,13 +659,29 @@ void dfs_print(nodeType *now, int depth) {
 
 }
 
-context *createContext(){
+context *createContext(nodeType address,){
 	context *returnContext = malloc(sizeof(context));
 	returnContext->callFrom = NULL;//for main(), callFrom = NULL
 	returnContext->address = NULL;
 	returnContext->typeTableSize =  returnContext->procedureTableSize = returnContext->varTableSize = 0;
 	returnContext->depth = 1;
 	return returnContext;
+}
+void assignContext(contextStruct *cF, nodeType *ad, int deep){
+	context *returnContext = malloc(sizeof(context));
+	returnContext->callFrom = cF;//for main(), callFrom = NULL
+	returnContext->address = ad;
+	returnContext->varTableSize = 0;
+	returnContext->depth = deep;
+	return returnContext;
+}
+int FindVar(context* con,char* x){
+	//to complete
+	for(i=0;i<con->varTableSize;i++){
+		if(strcmp(con->varTable[i].nt.label,x)==0)
+			return i;
+	}
+	return -1;
 }
 
 var returnNullVar() {
@@ -711,10 +727,125 @@ var interepter(nodeType *now){
 		}
 		else if (strcmp(now->nt.label, "body") == 0){
 			createTable(now->nt.op[0]);
+			interepter(now->nt.op[0]);
+			interepter(now->nt.op[2]);
 			//set variable here;
 			//do statements here;
 			return returnNullVar();
 		}
+		else if (strcmp(now->nt.label, "declaration") == 0){
+			//to complete
+		}
+		//sub declarations
+
+		else if (strcmp(now->nt.label, "multi statement") == 0){
+			int i;
+			for(i=0;i<now->nt.nops;i++)
+				if(strcmp(now->nt.op[i]->nt.label, "statement") == 0){
+					interepter(now->nt.op[i]);
+				}
+			return returnNullVar();
+		}
+		else if (strcmp(now->nt.label, "statement") == 0){
+			if(strcmp(now->nt.op[0]->t.label, "READ") == 0){
+				//to print some value
+			}
+			else if(strcmp(now->nt.op[0]->t.label, "WRITE") == 0){
+				interepter(now->nt.op[1]);
+				//to print some value
+			}
+			else if(strcmp(now->nt.op[0]->t.label, "IF") == 0){	
+				var ExpressIsTrue=interepter(now->nt.op[1]);
+				var ProcedureIsTrue=returnNullVar();
+				if(ExpressIsTrue->boolv){
+					ProcedureIsTrue=interepter(now->nt.op[3]);
+					if(!ProcedureIsTrue->boolv)
+						return ProcedureIsTrue;
+				}
+				else if(strcmp(now->nt.op[4]->t.label, "ELSE") == 0){
+					ProcedureIsTure=interepter(now->nt.op[4]);
+					if(!ProcedureIsTrue->boolv)
+						return ProcedureIsTrue;
+				}
+				else if(strcmp(now->nt.op[4]->nt.label, "multi elsif") == 0){
+					ProcedureIsTure=interepter(now->nt.op[4]);
+					if(!ProcedureIsTrue->boolv)
+						return ProcedureIsTrue;
+				}
+				return 
+			}
+			else if(strcmp(now->nt.op[0]->t.label, "WHILE") == 0){
+				var ExpressIsTrue=interepter(now->nt.op[1]);
+				var ProcedureIsTrue=returnNullVar();
+				//prepare for exit
+				while(ExpressIsTrue->boolv&&ProcedureIsTrue->boolv){
+					ProcedureIsTrue=interepter(now->nt.op[3]);
+					ExpressIsTrue=interepter(now->nt.op[1]);
+				}
+			}
+			else if(strcmp(now->nt.op[0]->t.label, "LOOP") == 0){
+				var ProcedureIsTrue=returnNullVar();
+				while(ProcedureIsTrue->boolv){
+					ProcedureIsTrue=interepter(now->nt.op[1]);
+				}
+			}
+			else if(strcmp(now->nt.op[0]->t.label, "FOR") == 0){
+				int id=FindVar(programContext,now->nt.op[0]->t.v_id);
+				var ProcedureIsTrue=returnNullVar();
+				
+				programContext->varTable[id].t=interepter(now->nt.op[3]);
+				if(strcmp(now->nt.op[6]->t.label, "BY") == 0)
+					for(;ProcedureIsTrue->boolv && programContext->varTable[id].t.intv<interepter(now->nt.op[5]).intv;programContext->varTable[id].t.intv+=interepter(now->nt.op[7]).intv){
+						ProcedureIsTrue=interepter(now->nt.op[9]);
+					}
+				else
+				{
+					for(;ProcedureIsTrue && programContext->varTable[id].t.intv<interepter(now->nt.op[5]).intv;programContext->varTable[id].t.intv++){
+						ProcedureIsTrue=interepter(now->nt.op[7]);
+					}
+
+				}
+				//to print some value
+			}
+			else if(strcmp(now->nt.op[0]->t.label, "EXIT") == 0){
+				var t=malloc(sizeof(var));
+				t->type=boolv;
+				t->boolv=0;
+				return t;
+				//to print some value
+			}
+			else if(strcmp(now->nt.op[0]->t.label, "RETURN") == 0){
+				//to print some value
+			}
+			return returnNullVar();
+				//to complete
+		}
+		else if (strcmp(now->nt.label, "multi elsif") == 0){
+			int i;
+			var ProcedureIsTrue=returnNullVar();
+
+			for(i=0;i<now->nt.nops-1;i++)
+				if(strcmp(now->nt.op[i]->nt.label, "elsif") == 0){
+					ProcedureIsTrue=interepter(now->nt.op[i]);
+					if(!ProcedureIsTrue->boolv){
+						return ProcedureIsTrue;
+					}
+				}
+			if(strcmp(now->nt.op[i]->nt.label, "ELSE") == 0){
+				ProcedureIsTrue=interepter(now->nt.op[i]);
+			}
+			return ProcedureIsTrue;
+		}
+		else if (strcmp(now->nt.label, "lvalue") == 0){
+			//to complete
+		}
+		else if (strcmp(now->nt.label, "expression") == 0){
+			//to complete
+		}
+\		else if (strcmp(now->nt.label, "declaration") == 0){
+			//to complete
+		}
+		
 	}
 
 	return returnNullVar();
