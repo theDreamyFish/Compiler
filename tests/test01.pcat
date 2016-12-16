@@ -6,8 +6,6 @@ PROGRAM IS
     VAR x : REAL := 2.0;
     VAR y : REAL := 3.0;
 BEGIN 
-    WRITE ("i = ", i, ", j = "  j);
+    WRITE ("i = ", i, ", j = ", j);
     WRITE ("x = ", x, ", y = ", y);
-    asdasd
-END;
 END;
