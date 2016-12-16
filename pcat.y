@@ -659,30 +659,52 @@ void dfs_print(nodeType *now, int depth) {
 
 }
 
-context *createContext(context *address, int depth){
-	context *returnContext = malloc(sizeof(context));
-	returnContext->callFrom = address;//for main(), callFrom = NULL
-	returnContext->address = NULL;
-	returnContext->typeTableSize =  returnContext->procedureTableSize = returnContext->varTableSize = 0;
-	returnContext->depth = depth + 1;
-	return returnContext;
-}
-
-int FindVar(context* con,char* x){
-	//to complete
-	int i;
-	for(i=0;i<con->varTableSize;i++){
-		if(strcmp(con->varTable[i].label,x)==0)
-			return i;
-	}
-	return -1;
-}
-
 var returnNullVar() {
 	var *returnVar = malloc(sizeof(var));
 	returnVar->type = nullv;
 	returnVar->nullv = 1;
 	return *returnVar;
+}
+
+context *createContext(context *address, int depth){
+	context *returnContext = malloc(sizeof(context));
+	returnContext->callFrom = address;//for main(), callFrom = NULL
+	returnContext->typeTableSize =  returnContext->procedureTableSize = returnContext->varTableSize = 0;
+	returnContext->depth = depth + 1;
+	if(returnContext->depth > 100)
+		fprintf(stdout, "Stack overflow\n");
+	returnContext->returnValue = returnNullVar();
+	return returnContext;
+}
+
+int findVar(context* con, char* x){
+	while(1){
+		for(int i=0;i<con->varTableSize;i++){
+			if(strcmp(con->varTable[i].label,x)==0)
+				return i;
+		}
+		if(con->callFrom != NULL)
+			con = con->callFrom;
+		else
+			break;
+	}
+	fprintf(stdout, "no var\n");
+	return -1;
+}
+
+nodeType *findProcedure(context *con, char *x) {
+	while(1){
+		for(int i = 0; i < con->procedureTableSize; i++){
+			if(strcmp(con->procedureTable[i].label, x) == 0)
+				return con->procedureTable[i].address;
+		}
+		if(con->callFrom != NULL)
+			con = con->callFrom;
+		else
+			break;
+	}
+	fprintf(stdout,"no procedure\n");
+	return new_node("error");
 }
 
 void createTable(nodeType *now) {
@@ -712,10 +734,11 @@ void createTable(nodeType *now) {
 
 var interepter(nodeType *now){
 	if (now->type == typeNonterminal) {
+		fprintf(stdout, "%s\n", now->nt.label);
 		if (strcmp(now->nt.label, "program") == 0){
 			programContext = createContext(NULL, 0);
 			interepter(now->nt.op[2]);
-			fprintf(stdout, "\nFinish intereptering.\n");
+			fprintf(stdout, "Finish intereptering.\n");
 			programContext = NULL;
 			return returnNullVar();
 		}
@@ -723,7 +746,11 @@ var interepter(nodeType *now){
 			createTable(now->nt.op[0]);
 			interepter(now->nt.op[0]);
 			interepter(now->nt.op[2]);
-			return returnNullVar();
+			var tempReturn = programContext->returnValue;
+			if (programContext->callFrom != NULL)
+				programContext = programContext->callFrom;
+			fprintf(stdout, "finish body\n" );
+			return tempReturn;
 		}
 		else if (strcmp(now->nt.label, "multi declaration") == 0){
 			int i;
@@ -741,26 +768,43 @@ var interepter(nodeType *now){
 			int i;
 			for(i=0;i<now->nt.nops;i++)
 				if(strcmp(now->nt.op[i]->nt.label, "statement") == 0){
-					interepter(now->nt.op[i]);
+					var tempReturn = interepter(now->nt.op[i]);
+					if (tempReturn.type == returnFlag || tempReturn.type == exitFlag)
+						return tempReturn;
 				}
 			return returnNullVar();
 		}
 		else if (strcmp(now->nt.label, "statement") == 0){
-			if(strcmp(now->nt.op[0]->t.label, "READ") == 0){
+			if(now->nt.nops > 2 && now->nt.op[1]->type == typeTerminal && strcmp(now->nt.op[1]->t.label, ":=") == 0){
+				interepter(now->nt.op[2]);
+				//copy this to op[0];
+			}
+			if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "ID") == 0){ 
+				//call
+				fprintf(stdout, "call: %s\n", now->nt.op[0]->t.v_string);
+				context *callContext = createContext(programContext, programContext->depth);
+				nodeType *callAddress = findProcedure(programContext, now->nt.op[0]->t.v_string);
+				//put actual params into callContext->varTable
+				int i;
+				for(i = 0; callAddress->nt.op[i]->type == typeTerminal || strcmp(callAddress->nt.op[i]->nt.label, "body"); i++);
+				programContext = callContext;
+				interepter(callAddress->nt.op[i]);
+			}
+			else if(now->nt.op[0]->type == typeTerminal &&  strcmp(now->nt.op[0]->t.label, "READ") == 0){//need to check whether now->nt.op[0] is terminal!!!
 				//to print some value
 			}
-			else if(strcmp(now->nt.op[0]->t.label, "WRITE") == 0){
+			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "WRITE") == 0){
 				interepter(now->nt.op[1]);
 				//to print some value
 			}
-			else if(strcmp(now->nt.op[0]->t.label, "IF") == 0){	
+			else if(now->nt.op[0]->type == typeTerminal &&  strcmp(now->nt.op[0]->t.label, "IF") == 0){	
 				var ExpressIsTrue=interepter(now->nt.op[1]);
 				var ProcedureIsTrue = returnNullVar();
 				if(ExpressIsTrue.boolv){
 					ProcedureIsTrue=interepter(now->nt.op[3]);
 					if(!ProcedureIsTrue.boolv)
 						return ProcedureIsTrue;
-				}
+				}// need to judge nops >4 and is terminal
 				else if(strcmp(now->nt.op[4]->t.label, "ELSE") == 0){
 					ProcedureIsTrue=interepter(now->nt.op[4]);
 					if(!ProcedureIsTrue.boolv)
@@ -773,7 +817,7 @@ var interepter(nodeType *now){
 				}
 				return ProcedureIsTrue;
 			}
-			else if(strcmp(now->nt.op[0]->t.label, "WHILE") == 0){
+			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "WHILE") == 0){
 				var ExpressIsTrue=interepter(now->nt.op[1]);
 				var ProcedureIsTrue=returnNullVar();
 				//prepare for exit
@@ -782,43 +826,46 @@ var interepter(nodeType *now){
 					ExpressIsTrue=interepter(now->nt.op[1]);
 				}
 			}
-			else if(strcmp(now->nt.op[0]->t.label, "LOOP") == 0){
+			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "LOOP") == 0){
 				var ProcedureIsTrue=returnNullVar();
 				while(ProcedureIsTrue.boolv){
 					ProcedureIsTrue=interepter(now->nt.op[1]);
 				}
 			}
-			else if(strcmp(now->nt.op[0]->t.label, "FOR") == 0){
-				int id=FindVar(programContext,now->nt.op[0]->t.v_id);
-				var ProcedureIsTrue=returnNullVar();
+			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "FOR") == 0){
+				int id = findVar(programContext,now->nt.op[0]->t.v_id);
+				var ProcedureIsTrue = returnNullVar();
 				
-				programContext->varTable[id].t=interepter(now->nt.op[3]);
+				programContext->varTable[id].t = interepter(now->nt.op[3]);
 				if(strcmp(now->nt.op[6]->t.label, "BY") == 0)
 					for(;ProcedureIsTrue.boolv && programContext->varTable[id].t.intv<interepter(now->nt.op[5]).intv;programContext->varTable[id].t.intv+=interepter(now->nt.op[7]).intv){
-						ProcedureIsTrue=interepter(now->nt.op[9]);
+						ProcedureIsTrue = interepter(now->nt.op[9]);
 					}
 				else
 				{
 					for(;ProcedureIsTrue.boolv && programContext->varTable[id].t.intv<interepter(now->nt.op[5]).intv;programContext->varTable[id].t.intv++){
 						ProcedureIsTrue=interepter(now->nt.op[7]);
 					}
-
 				}
 				//to print some value
 			}
-			else if(strcmp(now->nt.op[0]->t.label, "EXIT") == 0){
-				var *t=malloc(sizeof(var));
-				t->type=boolv;
-				t->boolv=0;
+			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "EXIT") == 0){
+				var *t = malloc(sizeof(var));
+				t->type = exitFlag;
+				t->exitFlag = 1;
 				return *t;
-				//to print some value
-				//?????
 			}
-			else if(strcmp(now->nt.op[0]->t.label, "RETURN") == 0){
-				//to print some value
+			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "RETURN") == 0){
+				var *t = malloc(sizeof(var));
+				t->type = returnFlag;
+				t->returnFlag = 1;
+				if(now->nt.op[1]->type == typeTerminal)
+					programContext->returnValue = returnNullVar();
+				else
+					programContext->returnValue = interepter(now->nt.op[1]);
+				return *t;
 			}
 			return returnNullVar();
-				//to complete
 		}
 		else if (strcmp(now->nt.label, "multi elsif") == 0){
 			int i;
@@ -837,10 +884,22 @@ var interepter(nodeType *now){
 			return ProcedureIsTrue;
 		}
 		else if (strcmp(now->nt.label, "lvalue") == 0){
-			//to complete
+			return returnNullVar();
 		}
 		else if (strcmp(now->nt.label, "expression") == 0){
-			//to complete
+			//fprintf(stdout, "call: %d\n", now->nt.nops);
+			if (now->nt.nops > 1 && now->nt.op[1]->type == typeNonterminal && strcmp(now->nt.op[1]->nt.label, "actual_params") == 0){
+				//call
+				fprintf(stdout, "call: %s\n", now->nt.op[0]->t.v_string);
+				context *callContext = createContext(programContext, programContext->depth);
+				nodeType *callAddress = findProcedure(programContext, now->nt.op[0]->t.v_string);
+				//put actual params into callContext->varTable
+				int i;
+				for(i = 0; callAddress->nt.op[i]->type == typeTerminal || strcmp(callAddress->nt.op[i]->nt.label, "body"); i++);
+				programContext = callContext;
+				interepter(callAddress->nt.op[i]); //returnVal
+			}
+			return returnNullVar();
 		}
 	}
 	else{
