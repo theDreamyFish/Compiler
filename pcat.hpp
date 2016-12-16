@@ -5,8 +5,9 @@
 #define TABLESIZE 1000
 #define STACKDEPTH 100
 
-typedef enum { typeTerminal, typeNonterminal } nodeEnum;
-typedef enum { nullv, intv, realv, boolv, stringv} varEnum;
+typedef enum {typeTerminal, typeNonterminal } nodeEnum;
+typedef enum {nullv, intv, realv, boolv, stringv } varEnum;
+typedef enum {varv, typev, arrayv } varElementEnum;
 
 /* Terminal */
 typedef struct {
@@ -52,14 +53,20 @@ typedef struct variable{
 } var;
 
 typedef struct varElementStruct{
-	nodeEnum type;
+	char *label;
+	varElementEnum type;
 	union {
 		var	t;
-		struct varNoneTerminal{
-			char *label;
+		struct arrayVar {
+			//char *label; // type of array, may need
 			int nops;
 			struct varElementStruct *op[1];
-		} nt;	
+		} arrayv;
+		struct  typeVar {
+			int nops;
+			char *label[1]; //may have bugs need to be checked
+			struct varElementStruct *op[1];
+		} typev;
 	};
 } varElement;
 
