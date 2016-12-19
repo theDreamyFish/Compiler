@@ -732,6 +732,65 @@ void createTable(nodeType *now) {
 	}
 }
 
+varElement *createAndCopy(varElement *svE){
+	varElement *tvE = malloc(sizeof(varElement));
+	tvE->label = svE->label;
+	/*
+	if svE->label == var
+		tvE->t = svE->t
+	else if svE-> label == array
+		tvE->nops = svE->nops
+		for counter = 1..svE->nops
+			tvE->op[counter] = createAndCopy(svE->op[counter])
+	else
+		tvE->nops = svE->nops
+		for counter = 1..svE->nops
+			tvE->label[counter] = strcpy()// label may have bug
+			tvE->op[counter] = createAndCopy(svE->op[counter])
+	*/
+	return tvE;
+}
+
+void copyVarElement(varElement *tvE, varElement *svE){
+	varElement *tsvE = createAndCopy(svE);
+	//switch tsvE's type and just copy tsvE into tvE directly(neednot concern about address);
+}
+
+varElement *searchVarAddress(nodeType *now){//l-value := expr, get l-value's address and the do copyVarElement(l-vale, interepter(expr))
+	/*
+	//now is l-value
+	if now == ID
+		return findVar(ID);
+	else if l-value[expr]
+		varElement tvE = searchVarAddress(now->I-value)
+		return tvE.array[interepter(now->expr)];
+	else if l-value.ID
+		varElement tvE = searchVarAddress(now->I-value)
+		search(tvE->label[i]==ID)
+		return tvE->op[i] 
+	*/
+	//delete the following codes;
+	varElement *rvE = malloc(sizeof(varElement));
+	return rvE;
+}
+
+varElement *createVarElement(nodeType *now){ //only when ID comp-values and ID array-values 
+	varElement *rvE = malloc(sizeof(varElement));
+	/*
+	if ID comp-values
+		rvE->type = component
+		for each ID:= expression
+			rvE->label[i] = ID
+			rvE->op[i++] = interepter(*now-> expr)
+	else if ID array-values
+		rvE->type = array
+		for each array-value
+			for i=1..interepter(*now->array-value[j]->expr[1])
+				rvE->op[i++] = createAndCopy(interepter(*now->array-value[j]->expr2));
+	*/
+	return rvE;
+}
+
 var interepter(nodeType *now){
 	if (now->type == typeNonterminal) {
 		fprintf(stdout, "%s\n", now->nt.label);
