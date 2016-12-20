@@ -14,6 +14,7 @@
 	void dfs_print(nodeType *now, int depth);
 	varElement *createAndCopy(varElement *svE);
 	varElement *interpreter(nodeType *now);
+	void entryTextPrint(varElement *v, char *s);
 	context *programContext;
 	void yyerror(char *str);
 %}
@@ -625,8 +626,7 @@ nodeType* dfs(nodeType *now, int depth) {
 }
 void dfs_print(nodeType *now, int depth) {
 	int i;
-	//if (printable(now)) {
-	if(1){
+	if (printable(now)) {
 		for (i = 0; i < depth-1; ++i) {
 			fprintf(stdout, "|   ");
 		}
@@ -745,7 +745,7 @@ varElement *createAndCopy(varElement *svE){
     tvE->type = svE->type;
     if (svE->type == varv) {
         tvE->t = svE->t;
-    } else if (svE->type == typev) {
+    } else if (svE->type == arrayv) {
         tvE->arrayv.nops = svE->arrayv.nops;
         for (int i = 0; i < svE->arrayv.nops; i++) {
             tvE->arrayv.op[i] = createAndCopy(svE->arrayv.op[i]);
@@ -760,7 +760,6 @@ varElement *createAndCopy(varElement *svE){
 	return tvE;
 }
 
-
 varElement *getlvalue(nodeType *now){
     //l-value := expr, get l-value's address and the do copyVarElement(l-vale, interpreter(expr))
     //now is l-value
@@ -769,7 +768,7 @@ varElement *getlvalue(nodeType *now){
     } else if (now->nt.nops == 3) { // if now --> l-value . ID
         varElement *tmp = getlvalue(now->nt.op[0]);
         for (int i = 0; i < tmp->typev.nops; ++i) {
-            if (strcmp(tmp->typev.label[i], now->nt.op[2]->t.label) == 0) {
+            if (strcmp(tmp->typev.label[i], now->nt.op[2]->t.v_id) == 0) {
                 return tmp->typev.op[i];
             }
         }
@@ -805,14 +804,16 @@ varElement *createVarElement(nodeType *now){
         ret->type = typev;
         nodeType *comp_values_node = now->nt.op[1];
         ret->typev.label[ret->typev.nops] = strdup(comp_values_node->nt.op[1]->t.v_id);
-        ret->typev.op[ret->typev.nops] = interpreter(comp_values_node->nt.op[3]);
+        varElement *r = interpreter(comp_values_node->nt.op[3]);
+        ret->typev.op[ret->typev.nops] = r;
         ret->typev.nops += 1;
         if (comp_values_node->nt.op[4]->type == typeNonterminal) { // comp_values -> { R := expression multi }
             nodeType *multi = comp_values_node->nt.op[4];
             for (int i = 2; i < multi->nt.nops; i += 4) {
                 char *id_name = multi->nt.op[i]->t.v_id;
-                ret->typev.label[ret->typev.nops] = strdup(id_name);
-                ret->typev.op[ret->typev.nops] = interpreter(multi->nt.op[i+2]);
+                ret->typev.label[ret->typev.nops] = strdup(id_name);            
+                varElement *r = createAndCopy(interpreter(multi->nt.op[i+2]));
+                ret->typev.op[ret->typev.nops] = r;
                 ret->typev.nops += 1;
             }
         }
@@ -877,6 +878,38 @@ void write(nodeType *now) { // now is write_parames or multi_write_expr
     }
 }
 //-----------------------end write ----------------------
+
+void testPrint(varElement *v){
+	if (v == NULL){
+		printf("NULL\n");
+	}
+	if (v->type == varv){
+		write_expression(v);
+	}
+	else if(v->type == typev){
+		for(int i = 0; i< v->typev.nops; i++){
+			printf("%s:		", v->typev.label[i]);
+			testPrint(v->typev.op[i]);
+			printf("\n");
+		}
+	}
+	else if(v->type == arrayv){
+		for (int i = 0 ;i< v->arrayv.nops; i++){
+			printf("%d:		", i );
+			testPrint(v->arrayv.op[i]);
+			printf("\n");
+		}
+	}
+}
+
+void entryTextPrint(varElement *v, char *s){
+	printf("start print %s\n", s);
+	testPrint(v);
+	printf("end print %s\n", s);
+}
+
+
+
 
 //-----------------------begin read ----------------------
 
@@ -993,8 +1026,8 @@ varElement *interpreter(nodeType *now){
 				now = now->nt.op[1];
 				for(int i = 1; i < now->nt.nops; i++){
 					nodeType *tempNow = now->nt.op[i];
-					varElement *r = interpreter(tempNow->nt.op[tempNow->nt.nops - 2]);
-					programContext->varTable[programContext->varTableSize] = createAndCopy(r);
+					varElement *r = createAndCopy( interpreter(tempNow->nt.op[tempNow->nt.nops - 2]));
+					programContext->varTable[programContext->varTableSize] = r;
 					programContext->varTable[programContext->varTableSize]->label = malloc(sizeof(char) * (strlen(tempNow->nt.op[0]->t.v_id)+1));
 					strcpy(programContext->varTable[programContext->varTableSize++]->label, tempNow->nt.op[0]->t.v_id);
 					if(tempNow->nt.op[1]->type == typeNonterminal){
@@ -1022,8 +1055,9 @@ varElement *interpreter(nodeType *now){
 		else if (strcmp(now->nt.label, "statement") == 0){
 			if(now->nt.nops > 2 && now->nt.op[1]->type == typeTerminal && strcmp(now->nt.op[1]->t.label, ":=") == 0){
 				varElement *r1 = interpreter(now->nt.op[0]);
+
 				varElement *r2 = createAndCopy(interpreter(now->nt.op[2]));
-				r1->t = r2->t;
+				r1->typev = r2->typev;
 				return returnNullVar();
 			}
 			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "ID") == 0){
@@ -1110,8 +1144,6 @@ varElement *interpreter(nodeType *now){
 						return returnNullVar();
 					else if (procedureIsTrue->t.type == returnFlag)
 						return procedureIsTrue;
-					//int test;
-					//scanf("%d", &test);
 				}
 			}
 			else if (now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "FOR") == 0){
@@ -1169,13 +1201,11 @@ varElement *interpreter(nodeType *now){
 				if (strcmp(now->nt.op[0]->nt.op[0]->t.label,"INTEGER") == 0){
 					r->t.type = intv;
 					r->t.intv = now->nt.op[0]->nt.op[0]->t.v_int;
-					//printf("%d\n",r->t.intv);
 					return r;
 				}
 				else if (strcmp(now->nt.op[0]->nt.op[0]->t.label,"REAL") == 0){
 					r->t.type = realv;
 					r->t.realv = now->nt.op[0]->nt.op[0]->t.v_real;
-					//printf("%f\n",r->t.realv);
 					return r;
 				}
 				else if (strcmp(now->nt.op[0]->nt.op[0]->t.label,"BOOL") == 0){
@@ -1466,7 +1496,7 @@ varElement *interpreter(nodeType *now){
 				printf ("error!\n");
 				return returnNullVar();
 			}
-			else if (now->nt.op[1]->type == typeTerminal && strcmp(now->nt.op[1]->nt.label, "GE") == 0){
+			else if (now->nt.op[1]->type == typeTerminal && strcmp(now->nt.op[1]->nt.label, ">=") == 0){
 				varElement *r1 = createAndCopy(interpreter(now->nt.op[0]));
 				varElement *r2 = createAndCopy(interpreter(now->nt.op[2]));
 				varElement *r = malloc(sizeof(varElement));
@@ -1494,7 +1524,7 @@ varElement *interpreter(nodeType *now){
 				printf ("error!\n");
 				return returnNullVar();
 			}
-			else if (now->nt.op[1]->type == typeTerminal && strcmp(now->nt.op[1]->nt.label, "LE") == 0){
+			else if (now->nt.op[1]->type == typeTerminal && strcmp(now->nt.op[1]->nt.label, "<=") == 0){
 				varElement *r1 = createAndCopy(interpreter(now->nt.op[0]));
 				varElement *r2 = createAndCopy(interpreter(now->nt.op[2]));
 				varElement *r = malloc(sizeof(varElement));
@@ -1522,7 +1552,7 @@ varElement *interpreter(nodeType *now){
 				printf ("error!\n");
 				return returnNullVar();
 			}
-			else if (now->nt.op[1]->type == typeTerminal && strcmp(now->nt.op[1]->nt.label, "NE") == 0){
+			else if (now->nt.op[1]->type == typeTerminal && strcmp(now->nt.op[1]->nt.label, "<>") == 0){
 				varElement *r1 = createAndCopy(interpreter(now->nt.op[0]));
 				varElement *r2 = createAndCopy(interpreter(now->nt.op[2]));
 				varElement *r = malloc(sizeof(varElement));
@@ -1578,8 +1608,10 @@ varElement *interpreter(nodeType *now){
 				programContext = callContext;
 				return interpreter(callAddress->nt.op[i]); //returnVal
 			}
-			else if(now->nt.nops > 1 && now->nt.op[1]->type == typeNonterminal && (strcmp(now->nt.op[1]->nt.label, "array_values") == 0 || strcmp(now->nt.op[1]->nt.label, "omp_values") == 0))
-				return createVarElement(now);
+			else if(now->nt.nops > 1 && now->nt.op[1]->type == typeNonterminal && (strcmp(now->nt.op[1]->nt.label, "array_values") == 0 || strcmp(now->nt.op[1]->nt.label, "comp_values") == 0)){
+				varElement *r = createVarElement(now);
+				return r;
+			}
 			fprintf(stdout, "error!\n");
 			return returnNullVar();
 		}
