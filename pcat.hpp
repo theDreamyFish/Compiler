@@ -17,6 +17,7 @@ typedef struct {
 
 	union {
 		int v_int;
+		int v_bool;
 		float v_real;
 		char *v_string;
 		char *v_id; // this may be changed to integer value; (after constructing an id table)

@@ -5,6 +5,7 @@
 
 	/* prototypes */
 	int yylex(void);
+	extern FILE *yyin;
 	nodeType *head;
 	nodeType *combine(char *description, int nops, ...);
 	nodeType *new_node(char *description);
@@ -21,7 +22,7 @@
 	nodeType *v_nptr;
 };
 
-%token <v_nptr> INTEGER REAL STRING ID TRUE FALSE
+%token <v_nptr> INTEGER REAL STRING ID BBOOL
 %token <v_nptr> ARRAY PROGRAMBEGIN BY DO ELSE ELSIF END FOR IF IN IS LOOP OF OUT PROCEDURE PROGRAM READ RECORD THEN TO TYPE VAR WHILE WRITE EXIT RETURN LBRACKET RBRACKET
 %token <v_nptr> ':' ';' ',' '.' '(' ')' '[' ']' '{' '}' BACKSLASH ASSIGN NOT LE GE NE '<' '>' '=' OR '+' '-' '*' '/' MOD DIV AND
 
@@ -504,6 +505,9 @@ number:
 	|	REAL {
 			$$ = combine("number", 1, $1);
 		}
+	| 	BBOOL {
+			$$ = combine("number", 1, $1);
+		}
 	;
 
 %%
@@ -632,18 +636,16 @@ void dfs_print(nodeType *now, int depth) {
 		if (now->type==typeTerminal) {
 			if(strcmp(now->t.label,"INTEGER")==0)
 				fprintf(stdout, "< %d >\n", now->t.v_int);
-			else
-			if(strcmp(now->t.label,"REAL")==0)
+			else if(strcmp(now->t.label,"REAL")==0)
 				fprintf(stdout, "< %lf >\n", now->t.v_real);
-			else
-			if(strcmp(now->t.label,"ID")==0)
+			else if(strcmp(now->t.label,"ID")==0)
 				fprintf(stdout, "< %s >\n", now->t.v_id);
-			else
-			if(strcmp(now->t.label,"STRING")==0)
+			else if(strcmp(now->t.label,"STRING")==0)
 				fprintf(stdout, "< %s >\n", now->t.v_string);
+			else if (strcmp(now->t.label, "BOOL") == 0)
+				fprintf(stdout, "< %d >\n", now->t.v_bool);
 			else
 				fprintf(stdout, "< %s >\n", now->t.label);
-
 			return;
 		}
 		fprintf(stdout, "%s\n", now->nt.label);
@@ -882,7 +884,9 @@ void read_var_element(varElement *var_element_to_read) {
     switch(var_element_to_read->t.type) {
         case nullv: fprintf(stdout, "[< not readable >]"); break;
         case intv: fscanf(stdin, "%d", &(var_element_to_read->t.intv)); break;
-        case realv: fscanf(stdin, "%f", &(var_element_to_read->t.realv)); break;
+        case realv: 
+        	fscanf(stdin, "%f", &(var_element_to_read->t.realv)); 
+        	break;
         case boolv: fscanf(stdin, "%d", &(var_element_to_read->t.boolv)); break;
         case stringv:
             var_element_to_read->t.stringv = malloc(128 * sizeof(char)); //[warnning] maxlength of string input is 128
@@ -914,6 +918,41 @@ void read(nodeType *now) {
 }
 
 //-----------------------end read ------------------------
+
+//-----------------------begin get_param_names --------------------------
+void get_param_names(nodeType *now, char **names, int *len) {
+    // now is node of subtree node of formal_params
+    // find all ids in subtree formal_params.
+    // don't dfs when meet a node of <type>
+    for (int i = 0; i < now->nt.nops; ++i) {
+        if (now->nt.op[i]->type == typeNonterminal && strcmp(now->nt.op[i]->nt.label, "type") != 0) {
+            get_param_names(now->nt.op[i], names, len);
+        } else if (strcmp(now->nt.op[i]->t.label, "ID") == 0) {
+            names[*len] = strdup(now->nt.op[i]->t.v_id);
+            *len += 1;
+        }
+    }
+}
+
+//-----------------------end get_param_names --------------------------------------------
+
+//-----------------------begin get_param_vals ------------------------------------------
+void get_param_vals(nodeType *now, varElement **vars, int *len) {
+    // now is actual-params
+    for (int i = 0; i < now->nt.nops; ++i) {
+        nodeType *tmp = now->nt.op[i];
+        if (tmp->type == typeNonterminal) { // tmp is expression or multi_expressions
+            if (strcmp(tmp->nt.label, "expression") == 0) {
+                vars[*len] = interpreter(tmp);
+                *len +=1;
+            } else {
+                get_param_vals(tmp, vars, len);
+            }
+        }
+    }
+}
+
+//-----------------------end get_param_vals --------------------------------------------
 
 varElement *interpreter(nodeType *now){
 	if (now->type == typeNonterminal) {
@@ -982,7 +1021,9 @@ varElement *interpreter(nodeType *now){
 		}
 		else if (strcmp(now->nt.label, "statement") == 0){
 			if(now->nt.nops > 2 && now->nt.op[1]->type == typeTerminal && strcmp(now->nt.op[1]->t.label, ":=") == 0){
-				*interpreter(now->nt.op[0]) = *createAndCopy(interpreter(now->nt.op[2]));
+				varElement *r1 = interpreter(now->nt.op[0]);
+				varElement *r2 = createAndCopy(interpreter(now->nt.op[2]));
+				r1->t = r2->t;
 				return returnNullVar();
 			}
 			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "ID") == 0){
@@ -990,7 +1031,23 @@ varElement *interpreter(nodeType *now){
 				//fprintf(stdout, "call: %s\n", now->nt.op[0]->t.v_string);
 				context *callContext = createContext(programContext, programContext->depth);
 				nodeType *callAddress = findProcedure(programContext, callContext, now->nt.op[0]->t.v_string);
-				//put actual params into callContext->varTable
+				
+				char *param_names[16];
+                int param_names_len = 0;
+                varElement *param_vals[16];
+                int param_vals_len = 0;
+                get_param_names(callAddress->nt.op[1], param_names, &param_names_len); // callAddress->nt.op[1] is formal_params
+                get_param_vals(now->nt.op[1], param_vals, &param_vals_len); //now->nt.op[1] is actual_params
+                if (param_names_len != param_vals_len) {
+                    fprintf(stdout, "[< param length doesn't match >]");
+                } else {
+                    for (int i = 0; i < param_names_len; ++i) {
+                        programContext->varTable[programContext->varTableSize] = createAndCopy(param_vals[i]);
+                        programContext->varTable[programContext->varTableSize]->label = strdup(param_names[i]);
+                        programContext->varTableSize += 1;
+                    }
+                }
+
 				int i;
 				for(i = 0; callAddress->nt.op[i]->type == typeTerminal || strcmp(callAddress->nt.op[i]->nt.label, "body"); i++);
 				programContext = callContext;
@@ -1053,16 +1110,18 @@ varElement *interpreter(nodeType *now){
 						return returnNullVar();
 					else if (procedureIsTrue->t.type == returnFlag)
 						return procedureIsTrue;
+					//int test;
+					//scanf("%d", &test);
 				}
 			}
 			else if (now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "FOR") == 0){
-				varElement *id = findVar(programContext,now->nt.op[0]->t.v_id);
+				varElement *id = findVar(programContext, now->nt.op[1]->t.v_id);
 				varElement *procedureIsTrue = returnNullVar();
 				varElement *start = createAndCopy(interpreter(now->nt.op[3]));
 				varElement *end = createAndCopy(interpreter(now->nt.op[5]));
 				if (strcmp(now->nt.op[6]->t.label, "BY") == 0){
 					varElement *step = createAndCopy(interpreter(now->nt.op[7]));
-					for (*id = *start; id->t.intv < end->t.intv; id->t.intv += step->t.intv){
+					for (id->t = start->t;id->t.intv <= end->t.intv; id->t.intv += step->t.intv){						
 						procedureIsTrue = createAndCopy(interpreter(now->nt.op[9]));
 						if (procedureIsTrue->t.type == exitFlag)
 							return returnNullVar();
@@ -1071,7 +1130,7 @@ varElement *interpreter(nodeType *now){
 					}
 				}
 				else{
-					for(*id = *start; id->t.intv < end->t.intv; id->t.intv++){
+					for(id->t = start->t; id->t.intv <= end->t.intv; id->t.intv++){
 						procedureIsTrue = createAndCopy(interpreter(now->nt.op[7]));
 						if (procedureIsTrue->t.type == exitFlag)
 							return returnNullVar();
@@ -1117,6 +1176,11 @@ varElement *interpreter(nodeType *now){
 					r->t.type = realv;
 					r->t.realv = now->nt.op[0]->nt.op[0]->t.v_real;
 					//printf("%f\n",r->t.realv);
+					return r;
+				}
+				else if (strcmp(now->nt.op[0]->nt.op[0]->t.label,"BOOL") == 0){
+					r->t.type = boolv;
+					r->t.boolv = now->nt.op[0]->nt.op[0]->t.v_bool;
 					return r;
 				}
 				fprintf(stdout, "error!\n");
@@ -1491,7 +1555,24 @@ varElement *interpreter(nodeType *now){
 				//fprintf(stdout, "call: %s\n", now->nt.op[0]->t.v_string);
 				context *callContext = createContext(programContext, programContext->depth);
 				nodeType *callAddress = findProcedure(programContext, callContext, now->nt.op[0]->t.v_string);
-				//put actual params into callContext->varTable
+				
+				char *param_names[16];
+                int param_names_len = 0;
+                varElement *param_vals[16];
+                int param_vals_len = 0;
+                get_param_names(callAddress->nt.op[1], param_names, &param_names_len); // callAddress->nt.op[1] is formal_params
+                get_param_vals(now->nt.op[1], param_vals, &param_vals_len); //now->nt.op[1] is actual_params
+                if (param_names_len != param_vals_len) {
+                	fprintf(stdout, "%d, %d\n", param_names_len, param_vals_len);
+                    fprintf(stdout, "[< param length doesn't match >]");
+                } else {
+                    for (int i = 0; i < param_names_len; ++i) {
+                        programContext->varTable[programContext->varTableSize] = createAndCopy(param_vals[i]);
+                        programContext->varTable[programContext->varTableSize]->label = strdup(param_names[i]);
+                        programContext->varTableSize += 1;
+                    }
+                }
+
 				int i;
 				for(i = 0; callAddress->nt.op[i]->type == typeTerminal || strcmp(callAddress->nt.op[i]->nt.label, "body"); i++);
 				programContext = callContext;
@@ -1518,7 +1599,7 @@ int main(int argc,char* argv[]){
     return -1;
   }
   else if (argc == 2)
-    freopen(argv[1],"r",stdin);
+  	yyin = fopen(argv[1],"r");
   yyparse();
   return 0;
 }
