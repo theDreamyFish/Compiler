@@ -46,9 +46,9 @@ typedef struct nodeTypeTag {
 typedef struct variable{
 	varEnum type;
 	union{
-		int nullv; 
+		int nullv;
 		int intv;
-		double realv;
+		float realv;
 		int boolv;
 		char *stringv;
 		int returnFlag;
@@ -79,7 +79,7 @@ typedef struct {
 	nodeType *address;
 } nameElement;
 
-typedef struct contextStruct{ 
+typedef struct contextStruct{
 	struct contextStruct *callFrom;//for main(), callFrom = NULL
 	struct contextStruct *father;
 	nameElement typeTable[TABLESIZE];

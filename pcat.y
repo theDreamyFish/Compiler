@@ -64,11 +64,11 @@ program:
 			$$ = combine("program", 4, $1, $2, new_node("error body"), $4);
 			yyerror("syntax error in body");
 			head = dfs($$, 0);
-			dfs_print(head, 0);			
+			dfs_print(head, 0);
 		}
 	| error ';' {
 			$$ = new_node("error program");
-			yyerror("syntax error in program");	
+			yyerror("syntax error in program");
 			head = dfs($$, 0);
 			dfs_print(head, 0);
 		}
@@ -550,7 +550,7 @@ nodeType *node_copy(nodeType *node) {
 }
 
 void yyerror(char *s) {
-	if (strcmp(s, "syntax error") == 0) return;	
+	if (strcmp(s, "syntax error") == 0) return;
 	if (line_num == 1)
 	 fprintf(stdout, "line %d col %d: %s\n", line_num, col_num, s);
 	else{
@@ -578,7 +578,7 @@ int printable(nodeType *node) {
 nodeType* dfs(nodeType *now, int depth) {
 	int i;
 	if (printable(now)) {
-		if (now->type==typeTerminal) 
+		if (now->type==typeTerminal)
 			return now;
 		int tot=0;
 		for (i = 0; i < now->nt.nops; ++i) {
@@ -643,7 +643,7 @@ void dfs_print(nodeType *now, int depth) {
 				fprintf(stdout, "< %s >\n", now->t.v_string);
 			else
 				fprintf(stdout, "< %s >\n", now->t.label);
-			
+
 			return;
 		}
 		fprintf(stdout, "%s\n", now->nt.label);
@@ -653,7 +653,7 @@ void dfs_print(nodeType *now, int depth) {
 	}
 	else{
 		if (now->type==typeNonterminal) {
-			for (i = 0; i < now->nt.nops; ++i) 
+			for (i = 0; i < now->nt.nops; ++i)
 				dfs_print(now->nt.op[i], depth);
 		}
 	}
@@ -715,7 +715,7 @@ nodeType *findProcedure(context *con, context *callcon, char *x) {
 void createTable(nodeType *now) {
 	for (int counter = 1; counter < now->nt.nops; counter++){
 		if (strcmp(now->nt.op[counter]->nt.op[0]->t.label, "TYPE") == 0){
-			nodeType *temp = now->nt.op[counter]->nt.op[1];			
+			nodeType *temp = now->nt.op[counter]->nt.op[1];
 			for (int tempCounter = 1; tempCounter < temp->nt.nops; tempCounter++){
 				programContext->typeTable[programContext->typeTableSize].label = malloc(strlen((temp->nt.op[tempCounter]->nt.op[0]->t.v_id)+1)*sizeof(char));
 				strcpy(programContext->typeTable[programContext->typeTableSize].label, temp->nt.op[tempCounter]->nt.op[0]->t.v_id);
@@ -725,7 +725,7 @@ void createTable(nodeType *now) {
 			}
 		}
 		else if (strcmp(now->nt.op[counter]->nt.op[0]->t.label, "PROCEDURE") == 0){
-			nodeType *temp = now->nt.op[counter]->nt.op[1];			
+			nodeType *temp = now->nt.op[counter]->nt.op[1];
 			for (int tempCounter = 1; tempCounter < temp->nt.nops; tempCounter++){
 				programContext->procedureTable[programContext->procedureTableSize].label = malloc(strlen((temp->nt.op[tempCounter]->nt.op[0]->t.v_id)+1)*sizeof(char));
 				strcpy(programContext->procedureTable[programContext->procedureTableSize].label, temp->nt.op[tempCounter]->nt.op[0]->t.v_id);
@@ -759,7 +759,9 @@ varElement *createAndCopy(varElement *svE){
 }
 
 
-varElement *getlvalue(nodeType *now){//l-value := expr, get l-value's address and the do copyVarElement(l-vale, interpreter(expr))
+varElement *getlvalue(nodeType *now){
+    //l-value := expr, get l-value's address and the do copyVarElement(l-vale, interpreter(expr))
+    //now is l-value
     if (now->nt.nops == 1) { // if now -> ID
         return findVar(programContext, now->nt.op[0]->t.v_id);
     } else if (now->nt.nops == 3) { // if now --> l-value . ID
@@ -831,6 +833,87 @@ varElement *createVarElement(nodeType *now){
     return ret;
 }
 
+//------------------------begin write -------------------------
+void write_expression(varElement *data) {
+    if (data->type == varv) {
+        switch(data->t.type) {
+            case nullv: fprintf(stdout, "[< not printable >]"); break;
+            case intv: fprintf(stdout, "%d", data->t.intv); break;
+            case realv: fprintf(stdout, "%f", data->t.realv); break;
+            case boolv:
+                if (data->t.boolv) {
+                    fprintf(stdout, "TRUE");
+                } else {
+                    fprintf(stdout, "FALSE");
+                }
+                break;
+            case stringv: fprintf(stdout, "%s", data->t.stringv); break;
+            case returnFlag: fprintf(stdout, "[< not printable >]"); break;
+            case exitFlag: fprintf(stdout, "[< not printable >]"); break;
+        }
+    } else {
+        fprintf(stdout, "[< not printable >]");
+    }
+}
+
+void write(nodeType *now) { // now is write_parames or multi_write_expr
+    for (int i = 0; i < now->nt.nops; ++i) {
+        nodeType *tmp = now->nt.op[i];
+        if (tmp->type == typeNonterminal) {
+            if (strcmp(tmp->nt.label, "write_expr")) { // tmp is write_expr; write_expr -> STRING | expression
+                nodeType *to_print_node = tmp->nt.op[0];
+                if (to_print_node->type == typeNonterminal) { // to_print_node is expression
+                    write_expression(interpreter(to_print_node));
+                } else { // to_print_node is STRING
+                    fprintf(stdout, "%s", to_print_node->t.v_string);
+                }
+            } else { // tmp is multi_write_expr
+                write(tmp);
+            }
+        }
+    }
+}
+//-----------------------end write ----------------------
+
+//-----------------------begin read ----------------------
+
+void read_var_element(varElement *var_element_to_read) {
+    switch(var_element_to_read->t.type) {
+        case nullv: fprintf(stdout, "[< not readable >]"); break;
+        case intv: fscanf(stdin, "%d", &(var_element_to_read->t.intv)); break;
+        case realv: fscanf(stdin, "%f", &(var_element_to_read->t.realv)); break;
+        case boolv: fscanf(stdin, "%d", &(var_element_to_read->t.boolv)); break;
+        case stringv:
+            var_element_to_read->t.stringv = malloc(128 * sizeof(char)); //[warnning] maxlength of string input is 128
+            fscanf(stdin, "%s", var_element_to_read->t.stringv);
+            break;
+        case returnFlag: fprintf(stdout, "[< not readable >]"); break;
+        case exitFlag: fprintf(stdout, "[< not readable >]"); break;
+    }
+}
+
+void read(nodeType *now) {
+    //read all the l-values under now;
+    //now is statement or multi_lvalue
+    for (int i = 0; i < now->nt.nops; ++i) {
+        nodeType *tmp = now->nt.op[i];
+        if (tmp->type == typeNonterminal) {
+            if (strcmp(tmp->nt.label, "lvalue") == 0) { // tmp is an l-value
+                varElement *var_element_to_read = getlvalue(tmp);
+                if (var_element_to_read->type == varv) {
+                    read_var_element(var_element_to_read);
+                } else {
+                    fprintf(stdout, "[< not readable >]");
+                }
+            } else { // tmp is a multi_value
+                read(tmp);
+            }
+        }
+    }
+}
+
+//-----------------------end read ------------------------
+
 varElement *interpreter(nodeType *now){
 	if (now->type == typeNonterminal) {
 		fprintf(stdout, "%s\n", now->nt.label);
@@ -901,7 +984,7 @@ varElement *interpreter(nodeType *now){
 				*interpreter(now->nt.op[0]) = *createAndCopy(interpreter(now->nt.op[2]));
 				return returnNullVar();
 			}
-			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "ID") == 0){ 
+			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "ID") == 0){
 				//call
 				fprintf(stdout, "call: %s\n", now->nt.op[0]->t.v_string);
 				context *callContext = createContext(programContext, programContext->depth);
@@ -914,15 +997,14 @@ varElement *interpreter(nodeType *now){
 				return returnNullVar();
 			}
 			else if(now->nt.op[0]->type == typeTerminal &&  strcmp(now->nt.op[0]->t.label, "READ") == 0){//need to check whether now->nt.op[0] is terminal!!!
-				//to print some value
+				read(now);
 				return returnNullVar();
 			}
 			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "WRITE") == 0){
-				//interpreter(now->nt.op[1]);
-				//to print some value
-				return returnNullVar();
+                write(now->nt.op[1]);
+                return returnNullVar();
 			}
-			else if(now->nt.op[0]->type == typeTerminal &&  strcmp(now->nt.op[0]->t.label, "IF") == 0){	
+			else if(now->nt.op[0]->type == typeTerminal &&  strcmp(now->nt.op[0]->t.label, "IF") == 0){
 				varElement *expressIsTrue = createAndCopy(interpreter(now->nt.op[1]));
 				varElement *procedureIsTrue = returnNullVar();
 				if(expressIsTrue->t.type == boolv && expressIsTrue->t.boolv == 1){
@@ -973,7 +1055,7 @@ varElement *interpreter(nodeType *now){
 			}
 			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "FOR") == 0){
 				varElement *id = findVar(programContext,now->nt.op[0]->t.v_id);
-				varElement *procedureIsTrue = returnNullVar();				
+				varElement *procedureIsTrue = returnNullVar();
 				varElement *start = createAndCopy(interpreter(now->nt.op[3]));
 				varElement *end = createAndCopy(interpreter(now->nt.op[5]));
 				if(strcmp(now->nt.op[6]->t.label, "BY") == 0){
@@ -1034,7 +1116,7 @@ varElement *interpreter(nodeType *now){
 					r->t.realv = now->nt.op[0]->nt.op[0]->t.v_real;
 					printf("%f\n",r->t.realv);
 					return r;
-				}	
+				}
 				fprintf(stdout, "error!\n");
 			}
 			else if (now->nt.op[0]->type == typeNonterminal && strcmp(now->nt.op[0]->nt.label, "lvalue") == 0)
