@@ -11,7 +11,8 @@
 	nodeType *node_copy(nodeType *node);
 	nodeType* dfs(nodeType *now, int depth);
 	void dfs_print(nodeType *now, int depth);
-	var interepter(nodeType *now);
+	varElement *createAndCopy(varElement *svE);
+	varElement *interpreter(nodeType *now);
 	context *programContext;
 	void yyerror(char *str);
 %}
@@ -57,7 +58,7 @@ program:
 			$$ = combine("program", 4, $1, $2, $3, $4);
 			head = dfs($$, 0);
 			dfs_print(head, 0);
-			interepter(head);
+			interpreter(head);
 		}
 	|	PROGRAM IS error ';'{
 			$$ = combine("program", 4, $1, $2, new_node("error body"), $4);
@@ -659,16 +660,18 @@ void dfs_print(nodeType *now, int depth) {
 
 }
 
-var returnNullVar() {
-	var *returnVar = malloc(sizeof(var));
-	returnVar->type = nullv;
-	returnVar->nullv = 1;
-	return *returnVar;
+varElement *returnNullVar() {
+	varElement *returnVar = malloc(sizeof(varElement));
+	returnVar->type = varv;
+	returnVar->t.type = nullv;
+	returnVar->t.nullv = 1;
+	return returnVar;
 }
 
 context *createContext(context *address, int depth){
 	context *returnContext = malloc(sizeof(context));
 	returnContext->callFrom = address;//for main(), callFrom = NULL
+	returnContext->father = NULL;
 	returnContext->typeTableSize =  returnContext->procedureTableSize = returnContext->varTableSize = 0;
 	returnContext->depth = depth + 1;
 	if(returnContext->depth > 100)
@@ -677,29 +680,31 @@ context *createContext(context *address, int depth){
 	return returnContext;
 }
 
-int findVar(context* con, char* x){
+varElement *findVar(context* con, char* x){
 	while(1){
-		for(int i=0;i<con->varTableSize;i++){
-			if(strcmp(con->varTable[i].label,x)==0)
-				return i;
+		for(int i = 0; i < con->varTableSize; i++){
+			if(strcmp(con->varTable[i]->label, x) == 0)
+				return con->varTable[i];
 		}
-		if(con->callFrom != NULL)
-			con = con->callFrom;
+		if(con->father != NULL)
+			con = con->father;
 		else
 			break;
 	}
 	fprintf(stdout, "no var\n");
-	return -1;
+	return returnNullVar();
 }
 
-nodeType *findProcedure(context *con, char *x) {
+nodeType *findProcedure(context *con, context *callcon, char *x) {
 	while(1){
 		for(int i = 0; i < con->procedureTableSize; i++){
-			if(strcmp(con->procedureTable[i].label, x) == 0)
+			if(strcmp(con->procedureTable[i].label, x) == 0){
+				callcon->father = con;
 				return con->procedureTable[i].address;
+			}
 		}
-		if(con->callFrom != NULL)
-			con = con->callFrom;
+		if(con->father != NULL)
+			con = con->father;
 		else
 			break;
 	}
@@ -735,77 +740,112 @@ void createTable(nodeType *now) {
 varElement *createAndCopy(varElement *svE){
 	varElement *tvE = malloc(sizeof(varElement));
 	tvE->label = svE->label;
-	/*
-	if svE->label == var
-		tvE->t = svE->t
-	else if svE-> label == array
-		tvE->nops = svE->nops
-		for counter = 1..svE->nops
-			tvE->op[counter] = createAndCopy(svE->op[counter])
-	else
-		tvE->nops = svE->nops
-		for counter = 1..svE->nops
-			tvE->label[counter] = strcpy()// label may have bug
-			tvE->op[counter] = createAndCopy(svE->op[counter])
-	*/
+    tvE->type = svE->type;
+    if (svE->type == varv) {
+        tvE->t = svE->t;
+    } else if (svE->type == typev) {
+        tvE->arrayv.nops = svE->arrayv.nops;
+        for (int i = 0; i < svE->arrayv.nops; i++) {
+            tvE->arrayv.op[i] = createAndCopy(svE->arrayv.op[i]);
+        }
+    } else {
+        tvE->typev.nops = svE->typev.nops;
+        for (int i = 0; i < svE->typev.nops; i++) {
+            tvE->typev.label[i] = strdup(svE->typev.label[i]);
+            tvE->typev.op[i] = createAndCopy(svE->typev.op[i]);
+        }
+    }
 	return tvE;
 }
 
-void copyVarElement(varElement *tvE, varElement *svE){
-	varElement *tsvE = createAndCopy(svE);
-	//switch tsvE's type and just copy tsvE into tvE directly(neednot concern about address);
+
+varElement *getlvalue(nodeType *now){//l-value := expr, get l-value's address and the do copyVarElement(l-vale, interpreter(expr))
+    if (now->nt.nops == 1) { // if now -> ID
+        return findVar(programContext, now->nt.op[0]->t.label);
+    } else if (now->nt.nops == 3) { // if now --> l-value . ID
+        varElement *tmp = getlvalue(now->nt.op[0]);
+        for (int i = 0; i < tmp->typev.nops; ++i) {
+            if (strcmp(tmp->typev.label[i], now->nt.op[2]->t.label)) {
+                return tmp->typev.op[i];
+            }
+        }
+        fprintf(stdout, "lvalue not found");
+        return returnNullVar();
+    } else if (now->nt.nops == 4) { // if now --> l-value [ expression ]
+        varElement *tmp = getlvalue(now->nt.op[0]);
+        int index = interpreter(now->nt.op[2])->t.intv;
+        return tmp->arrayv.op[index];
+    }
+    return returnNullVar();
 }
 
-varElement *searchVarAddress(nodeType *now){//l-value := expr, get l-value's address and the do copyVarElement(l-vale, interepter(expr))
-	/*
-	//now is l-value
-	if now == ID
-		return findVar(ID);
-	else if l-value[expr]
-		varElement tvE = searchVarAddress(now->I-value)
-		return tvE.array[interepter(now->expr)];
-	else if l-value.ID
-		varElement tvE = searchVarAddress(now->I-value)
-		search(tvE->label[i]==ID)
-		return tvE->op[i] 
-	*/
-	//delete the following codes;
-	varElement *rvE = malloc(sizeof(varElement));
-	return rvE;
+void addArrayValueToVarElement(varElement *x, nodeType *node) { // node if an array_value node
+    if (node->nt.nops == 1) { // array_value --> expression
+        x->arrayv.op[x->arrayv.nops] = interpreter(node->nt.op[0]);
+        x->arrayv.nops += 1;
+    } else { // array_value --> expression of expression
+        int n = interpreter(node->nt.op[0])->t.intv;
+        for (int i = 0; i < n ; ++i) {
+            x->arrayv.op[x->arrayv.nops] = interpreter(node->nt.op[2]);
+            x->arrayv.nops += 1;
+        }
+    }
 }
 
-varElement *createVarElement(nodeType *now){ //only when ID comp-values and ID array-values 
-	varElement *rvE = malloc(sizeof(varElement));
-	/*
-	if ID comp-values
-		rvE->type = component
-		for each ID:= expression
-			rvE->label[i] = ID
-			rvE->op[i++] = interepter(*now-> expr)
-	else if ID array-values
-		rvE->type = array
-		for each array-value
-			for i=1..interepter(*now->array-value[j]->expr[1])
-				rvE->op[i++] = createAndCopy(interepter(*now->array-value[j]->expr2));
-	*/
-	return rvE;
+varElement *createVarElement(nodeType *now){
+    // only when ID comp-values and ID array-values
+    // now->nt.label == expression
+	varElement *ret = malloc(sizeof(varElement));
+
+    if (strcmp(now->nt.op[1]->nt.label, "comp_values")) { // expression -> ID comp-values
+        ret->type = typev;
+        nodeType *comp_values_node = now->nt.op[1];
+        ret->typev.label[ret->typev.nops] = strdup(comp_values_node->nt.op[1]->t.v_id);
+        ret->typev.op[ret->typev.nops] = interpreter(comp_values_node->nt.op[3]);
+        ret->typev.nops += 1;
+        if (comp_values_node->nt.op[4]->type == typeNonterminal) { // comp_values -> { R := expression multi }
+            nodeType *multi = comp_values_node->nt.op[4];
+            for (int i = 2; i < multi->nt.nops; i += 4) {
+                char *id_name = multi->nt.op[i]->t.v_id;
+                ret->typev.label[ret->typev.nops] = strdup(id_name);
+                ret->typev.op[ret->typev.nops] = interpreter(multi->nt.op[i+2]);
+                ret->typev.nops += 1;
+            }
+        }
+    } else { // expression -> ID array-values
+        ret->type = arrayv;
+        nodeType *array_values_node = now->nt.op[1];
+        addArrayValueToVarElement(ret, array_values_node->nt.op[1]);
+        if (array_values_node->nt.op[2]->type == typeNonterminal) {
+            // true: array_value -> [< array_value multi >]
+            // false: array_values -> [< array_value <empty> >]
+            nodeType *multi_array_value = array_values_node->nt.op[2];
+            for (int i = 0; i < multi_array_value->nt.nops; ++i) {
+                nodeType *node = multi_array_value->nt.op[i];
+                if (node->type == typeNonterminal) { // is array_value
+                    addArrayValueToVarElement(ret, node);
+                }
+            }
+        }
+    }
+    return ret;
 }
 
-var interepter(nodeType *now){
+varElement *interpreter(nodeType *now){
 	if (now->type == typeNonterminal) {
 		fprintf(stdout, "%s\n", now->nt.label);
 		if (strcmp(now->nt.label, "program") == 0){
 			programContext = createContext(NULL, 0);
-			interepter(now->nt.op[2]);
-			fprintf(stdout, "Finish intereptering.\n");
+			interpreter(now->nt.op[2]);
+			fprintf(stdout, "Finish interpretering.\n");
 			programContext = NULL;
 			return returnNullVar();
 		}
 		else if (strcmp(now->nt.label, "body") == 0){
 			createTable(now->nt.op[0]);
-			interepter(now->nt.op[0]);
-			interepter(now->nt.op[2]);
-			var tempReturn = programContext->returnValue;
+			interpreter(now->nt.op[0]);
+			interpreter(now->nt.op[2]);
+			varElement *tempReturn = createAndCopy(programContext->returnValue);
 			if (programContext->callFrom != NULL)
 				programContext = programContext->callFrom;
 			fprintf(stdout, "finish body\n" );
@@ -815,7 +855,7 @@ var interepter(nodeType *now){
 			int i;
 			for(i=0;i<now->nt.nops;i++)
 				if(strcmp(now->nt.op[i]->nt.label, "declaration") == 0){
-					interepter(now->nt.op[i]);
+					interpreter(now->nt.op[i]);
 				}
 			return returnNullVar();
 		}
@@ -827,144 +867,174 @@ var interepter(nodeType *now){
 			int i;
 			for(i=0;i<now->nt.nops;i++)
 				if(strcmp(now->nt.op[i]->nt.label, "statement") == 0){
-					var tempReturn = interepter(now->nt.op[i]);
-					if (tempReturn.type == returnFlag || tempReturn.type == exitFlag)
+					varElement *tempReturn = createAndCopy(interpreter(now->nt.op[i]));
+					if (tempReturn->t.type == returnFlag || tempReturn->t.type == exitFlag)
 						return tempReturn;
 				}
 			return returnNullVar();
 		}
 		else if (strcmp(now->nt.label, "statement") == 0){
 			if(now->nt.nops > 2 && now->nt.op[1]->type == typeTerminal && strcmp(now->nt.op[1]->t.label, ":=") == 0){
-				interepter(now->nt.op[2]);
-				//copy this to op[0];
+				*interpreter(now->nt.op[0]) = *createAndCopy(interpreter(now->nt.op[2]));
+				return returnNullVar();
 			}
-			if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "ID") == 0){ 
+			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "ID") == 0){ 
 				//call
 				fprintf(stdout, "call: %s\n", now->nt.op[0]->t.v_string);
 				context *callContext = createContext(programContext, programContext->depth);
-				nodeType *callAddress = findProcedure(programContext, now->nt.op[0]->t.v_string);
+				nodeType *callAddress = findProcedure(programContext, callContext, now->nt.op[0]->t.v_string);
 				//put actual params into callContext->varTable
 				int i;
 				for(i = 0; callAddress->nt.op[i]->type == typeTerminal || strcmp(callAddress->nt.op[i]->nt.label, "body"); i++);
 				programContext = callContext;
-				interepter(callAddress->nt.op[i]);
+				interpreter(callAddress->nt.op[i]);
+				return returnNullVar();
 			}
 			else if(now->nt.op[0]->type == typeTerminal &&  strcmp(now->nt.op[0]->t.label, "READ") == 0){//need to check whether now->nt.op[0] is terminal!!!
 				//to print some value
+				return returnNullVar();
 			}
 			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "WRITE") == 0){
-				interepter(now->nt.op[1]);
+				//interpreter(now->nt.op[1]);
 				//to print some value
+				return returnNullVar();
 			}
 			else if(now->nt.op[0]->type == typeTerminal &&  strcmp(now->nt.op[0]->t.label, "IF") == 0){	
-				var ExpressIsTrue=interepter(now->nt.op[1]);
-				var ProcedureIsTrue = returnNullVar();
-				if(ExpressIsTrue.boolv){
-					ProcedureIsTrue=interepter(now->nt.op[3]);
-					if(!ProcedureIsTrue.boolv)
-						return ProcedureIsTrue;
-				}// need to judge nops >4 and is terminal
-				else if(strcmp(now->nt.op[4]->t.label, "ELSE") == 0){
-					ProcedureIsTrue=interepter(now->nt.op[4]);
-					if(!ProcedureIsTrue.boolv)
-						return ProcedureIsTrue;
+				varElement *expressIsTrue = createAndCopy(interpreter(now->nt.op[1]));
+				varElement *procedureIsTrue = returnNullVar();
+				if(expressIsTrue->t.type == boolv && expressIsTrue->t.boolv == 1){
+					procedureIsTrue = createAndCopy(interpreter(now->nt.op[3]));
+					if(procedureIsTrue->t.type == returnFlag || procedureIsTrue->t.type == exitFlag)
+						return procedureIsTrue;
 				}
-				else if(strcmp(now->nt.op[4]->nt.label, "multi elsif") == 0){
-					ProcedureIsTrue=interepter(now->nt.op[4]);
-					if(!ProcedureIsTrue.boolv)
-						return ProcedureIsTrue;
+				else if(now->nt.nops > 4 && strcmp(now->nt.op[4]->t.label, "ELSE") == 0){
+					procedureIsTrue = createAndCopy(interpreter(now->nt.op[4]));
+					if(procedureIsTrue->t.type == returnFlag || procedureIsTrue->t.type == exitFlag)
+						return procedureIsTrue;
 				}
-				return ProcedureIsTrue;
+				else if(now->nt.nops > 4 && strcmp(now->nt.op[4]->nt.label, "multi elsif") == 0){
+					nodeType *tempNow = now->nt.op[4];
+					for(int i=0; i < tempNow->nt.nops - 1; i++)
+						if(tempNow->nt.op[i]->type == typeTerminal && strcmp(tempNow->nt.op[i]->t.label, "elsif") == 0){
+							expressIsTrue = createAndCopy(interpreter(tempNow->nt.op[i + 1]));
+							if(expressIsTrue->t.type == boolv && expressIsTrue->t.boolv == 1)
+								return interpreter(tempNow->nt.op[i + 1]);
+						}
+					return interpreter(now->nt.op[6]);
+				}
+				return procedureIsTrue;
 			}
 			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "WHILE") == 0){
-				var ExpressIsTrue=interepter(now->nt.op[1]);
-				var ProcedureIsTrue=returnNullVar();
-				//prepare for exit
-				while(ExpressIsTrue.boolv&&ProcedureIsTrue.boolv){
-					ProcedureIsTrue=interepter(now->nt.op[3]);
-					ExpressIsTrue=interepter(now->nt.op[1]);
+				varElement *expressIsTrue = createAndCopy(interpreter(now->nt.op[1]));
+				varElement *procedureIsTrue = returnNullVar();
+
+				while(expressIsTrue->t.type == boolv && expressIsTrue->t.boolv == 1){
+					procedureIsTrue = createAndCopy(interpreter(now->nt.op[3]));
+					if(procedureIsTrue->t.type == exitFlag)
+						break;
+					else if (procedureIsTrue->t.type == returnFlag)
+						return procedureIsTrue;
+					expressIsTrue = createAndCopy(interpreter(now->nt.op[1]));
 				}
+				return returnNullVar();
 			}
 			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "LOOP") == 0){
-				var ProcedureIsTrue=returnNullVar();
-				while(ProcedureIsTrue.boolv){
-					ProcedureIsTrue=interepter(now->nt.op[1]);
+				varElement *procedureIsTrue = returnNullVar();
+				while(1){
+					procedureIsTrue = createAndCopy(interpreter(now->nt.op[1]));
+					if(procedureIsTrue->t.type == exitFlag)
+						return returnNullVar();
+					else if (procedureIsTrue->t.type == returnFlag)
+						return procedureIsTrue;
 				}
 			}
 			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "FOR") == 0){
-				int id = findVar(programContext,now->nt.op[0]->t.v_id);
-				var ProcedureIsTrue = returnNullVar();
-				
-				programContext->varTable[id].t = interepter(now->nt.op[3]);
-				if(strcmp(now->nt.op[6]->t.label, "BY") == 0)
-					for(;ProcedureIsTrue.boolv && programContext->varTable[id].t.intv<interepter(now->nt.op[5]).intv;programContext->varTable[id].t.intv+=interepter(now->nt.op[7]).intv){
-						ProcedureIsTrue = interepter(now->nt.op[9]);
-					}
-				else
-				{
-					for(;ProcedureIsTrue.boolv && programContext->varTable[id].t.intv<interepter(now->nt.op[5]).intv;programContext->varTable[id].t.intv++){
-						ProcedureIsTrue=interepter(now->nt.op[7]);
+				varElement *id = findVar(programContext,now->nt.op[0]->t.v_id);
+				varElement *procedureIsTrue = returnNullVar();				
+				varElement *start = createAndCopy(interpreter(now->nt.op[3]));
+				varElement *end = createAndCopy(interpreter(now->nt.op[5]));
+				if(strcmp(now->nt.op[6]->t.label, "BY") == 0){
+					varElement *step = createAndCopy(interpreter(now->nt.op[7]));
+					for(*id = *start; id->t.intv < end->t.intv; id->t.intv += step->t.intv){
+						procedureIsTrue = createAndCopy(interpreter(now->nt.op[9]));
+						if(procedureIsTrue->t.type == exitFlag)
+							return returnNullVar();
+						else if (procedureIsTrue->t.type == returnFlag)
+							return procedureIsTrue;
 					}
 				}
-				//to print some value
+				else{
+					for(*id = *start; id->t.intv < end->t.intv; id->t.intv++){
+						procedureIsTrue = createAndCopy(interpreter(now->nt.op[7]));
+						if(procedureIsTrue->t.type == exitFlag)
+							return returnNullVar();
+						else if (procedureIsTrue->t.type == returnFlag)
+							return procedureIsTrue;
+					}
+				}
+				return returnNullVar();
 			}
 			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "EXIT") == 0){
-				var *t = malloc(sizeof(var));
-				t->type = exitFlag;
-				t->exitFlag = 1;
-				return *t;
+				varElement *r = malloc(sizeof(varElement));
+				r->type = varv;
+				r->t.type = exitFlag;
+				r->t.exitFlag = 1;
+				return r;
 			}
 			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "RETURN") == 0){
-				var *t = malloc(sizeof(var));
-				t->type = returnFlag;
-				t->returnFlag = 1;
+				varElement *r = malloc(sizeof(varElement));
+				r->type = varv;
+				r->t.type = returnFlag;
 				if(now->nt.op[1]->type == typeTerminal)
 					programContext->returnValue = returnNullVar();
 				else
-					programContext->returnValue = interepter(now->nt.op[1]);
-				return *t;
+					programContext->returnValue = createAndCopy(interpreter(now->nt.op[1]));
+				return r;
 			}
 			return returnNullVar();
-		}
-		else if (strcmp(now->nt.label, "multi elsif") == 0){
-			int i;
-			var ProcedureIsTrue=returnNullVar();
-
-			for(i=0;i<now->nt.nops-1;i++)
-				if(strcmp(now->nt.op[i]->nt.label, "elsif") == 0){
-					ProcedureIsTrue=interepter(now->nt.op[i]);
-					if(!ProcedureIsTrue.boolv){
-						return ProcedureIsTrue;
-					}
-				}
-			if(strcmp(now->nt.op[i]->nt.label, "ELSE") == 0){
-				ProcedureIsTrue=interepter(now->nt.op[i]);
-			}
-			return ProcedureIsTrue;
 		}
 		else if (strcmp(now->nt.label, "lvalue") == 0){
-			return returnNullVar();
+			return getlvalue(now);
 		}
 		else if (strcmp(now->nt.label, "expression") == 0){
 			//fprintf(stdout, "call: %d\n", now->nt.nops);
-			if (now->nt.nops > 1 && now->nt.op[1]->type == typeNonterminal && strcmp(now->nt.op[1]->nt.label, "actual_params") == 0){
+			if(now->nt.op[0]->type == typeNonterminal && strcmp(now->nt.op[0]->nt.label, "number") == 0){
+				varElement *r = malloc(sizeof(varElement));
+				r->type = varv;
+				if(strcmp(now->nt.op[0]->nt.op[0]->t.label,"INTEGER") == 0){
+					r->t.type = intv;
+					r->t.intv = now->nt.op[0]->nt.op[0]->t.v_int;
+					printf("%d\n",r->t.intv);
+					return r;
+				}
+				else if (strcmp(now->nt.op[0]->nt.op[0]->t.label,"REAL") == 0){
+					r->t.type = realv;
+					r->t.realv = now->nt.op[0]->nt.op[0]->t.v_real;
+					printf("%f\n",r->t.realv);
+					return r;
+				}	
+				fprintf(stdout, "error!\n");
+			}
+			else if(now->nt.op[0]->type == typeNonterminal && strcmp(now->nt.op[0]->nt.label, "lvalue") == 0)
+				return getlvalue(now);
+			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->nt.label, "(") == 0)
+				return interpreter(now->nt.op[1]);
+			else if(now->nt.nops > 1 && now->nt.op[1]->type == typeNonterminal && strcmp(now->nt.op[1]->nt.label, "actual_params") == 0){
 				//call
 				fprintf(stdout, "call: %s\n", now->nt.op[0]->t.v_string);
 				context *callContext = createContext(programContext, programContext->depth);
-				nodeType *callAddress = findProcedure(programContext, now->nt.op[0]->t.v_string);
+				nodeType *callAddress = findProcedure(programContext, callContext, now->nt.op[0]->t.v_string);
 				//put actual params into callContext->varTable
 				int i;
 				for(i = 0; callAddress->nt.op[i]->type == typeTerminal || strcmp(callAddress->nt.op[i]->nt.label, "body"); i++);
 				programContext = callContext;
-				interepter(callAddress->nt.op[i]); //returnVal
+				return interpreter(callAddress->nt.op[i]); //returnVal
 			}
+			fprintf(stdout, "error!\n");
 			return returnNullVar();
 		}
 	}
-	else{
-		//if node is terminal and is int, real or bool ... return its value.
-	}
-
+	fprintf(stdout, "error!\n");
 	return returnNullVar();
 }
 
