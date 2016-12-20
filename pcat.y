@@ -720,7 +720,7 @@ void createTable(nodeType *now) {
 				programContext->typeTable[programContext->typeTableSize].label = malloc(strlen((temp->nt.op[tempCounter]->nt.op[0]->t.v_id)+1)*sizeof(char));
 				strcpy(programContext->typeTable[programContext->typeTableSize].label, temp->nt.op[tempCounter]->nt.op[0]->t.v_id);
 				programContext->typeTable[programContext->typeTableSize].address = temp->nt.op[tempCounter];
-				fprintf(stdout, "get TYPE:%s\n", programContext->typeTable[programContext->typeTableSize].label);
+				//fprintf(stdout, "get TYPE:%s\n", programContext->typeTable[programContext->typeTableSize].label);
 				programContext->typeTableSize++;
 			}
 		}
@@ -730,7 +730,7 @@ void createTable(nodeType *now) {
 				programContext->procedureTable[programContext->procedureTableSize].label = malloc(strlen((temp->nt.op[tempCounter]->nt.op[0]->t.v_id)+1)*sizeof(char));
 				strcpy(programContext->procedureTable[programContext->procedureTableSize].label, temp->nt.op[tempCounter]->nt.op[0]->t.v_id);
 				programContext->procedureTable[programContext->procedureTableSize].address = temp->nt.op[tempCounter];
-				fprintf(stdout, "get PROCEDURE:%s\n", programContext->procedureTable[programContext->procedureTableSize].label);
+				//fprintf(stdout, "get PROCEDURE:%s\n", programContext->procedureTable[programContext->procedureTableSize].label);
 				programContext->procedureTableSize++;
 			}
 		}
@@ -767,7 +767,7 @@ varElement *getlvalue(nodeType *now){
     } else if (now->nt.nops == 3) { // if now --> l-value . ID
         varElement *tmp = getlvalue(now->nt.op[0]);
         for (int i = 0; i < tmp->typev.nops; ++i) {
-            if (strcmp(tmp->typev.label[i], now->nt.op[2]->t.label)) {
+            if (strcmp(tmp->typev.label[i], now->nt.op[2]->t.label) == 0) {
                 return tmp->typev.op[i];
             }
         }
@@ -799,7 +799,7 @@ varElement *createVarElement(nodeType *now){
     // now->nt.label == expression
 	varElement *ret = malloc(sizeof(varElement));
 
-    if (strcmp(now->nt.op[1]->nt.label, "comp_values")) { // expression -> ID comp-values
+    if (strcmp(now->nt.op[1]->nt.label, "comp_values") == 0) { // expression -> ID comp-values
         ret->type = typev;
         nodeType *comp_values_node = now->nt.op[1];
         ret->typev.label[ret->typev.nops] = strdup(comp_values_node->nt.op[1]->t.v_id);
@@ -860,9 +860,10 @@ void write(nodeType *now) { // now is write_parames or multi_write_expr
     for (int i = 0; i < now->nt.nops; ++i) {
         nodeType *tmp = now->nt.op[i];
         if (tmp->type == typeNonterminal) {
-            if (strcmp(tmp->nt.label, "write_expr")) { // tmp is write_expr; write_expr -> STRING | expression
+            if (strcmp(tmp->nt.label, "write_expr") == 0) { // tmp is write_expr; write_expr -> STRING | expression
                 nodeType *to_print_node = tmp->nt.op[0];
-                if (to_print_node->type == typeNonterminal) { // to_print_node is expression
+
+                if (to_print_node->type == typeNonterminal) {// to_print_node is expression
                     write_expression(interpreter(to_print_node));
                 } else { // to_print_node is STRING
                     fprintf(stdout, "%s", to_print_node->t.v_string);
@@ -916,11 +917,11 @@ void read(nodeType *now) {
 
 varElement *interpreter(nodeType *now){
 	if (now->type == typeNonterminal) {
-		fprintf(stdout, "%s\n", now->nt.label);
+		//fprintf(stdout, "%s\n", now->nt.label);
 		if (strcmp(now->nt.label, "program") == 0){
 			programContext = createContext(NULL, 0);
 			interpreter(now->nt.op[2]);
-			fprintf(stdout, "Finish interpretering.\n");
+			//fprintf(stdout, "Finish interpretering.\n");
 			programContext = NULL;
 			return returnNullVar();
 		}
@@ -931,7 +932,7 @@ varElement *interpreter(nodeType *now){
 			varElement *tempReturn = createAndCopy(programContext->returnValue);
 			if (programContext->callFrom != NULL)
 				programContext = programContext->callFrom;
-			fprintf(stdout, "finish body\n" );
+			//fprintf(stdout, "finish body\n" );
 			return tempReturn;
 		}
 		else if (strcmp(now->nt.label, "multi declaration") == 0){
@@ -986,7 +987,7 @@ varElement *interpreter(nodeType *now){
 			}
 			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "ID") == 0){
 				//call
-				fprintf(stdout, "call: %s\n", now->nt.op[0]->t.v_string);
+				//fprintf(stdout, "call: %s\n", now->nt.op[0]->t.v_string);
 				context *callContext = createContext(programContext, programContext->depth);
 				nodeType *callAddress = findProcedure(programContext, callContext, now->nt.op[0]->t.v_string);
 				//put actual params into callContext->varTable
@@ -1002,6 +1003,7 @@ varElement *interpreter(nodeType *now){
 			}
 			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->t.label, "WRITE") == 0){
                 write(now->nt.op[1]);
+                printf("\n");
                 return returnNullVar();
 			}
 			else if(now->nt.op[0]->type == typeTerminal &&  strcmp(now->nt.op[0]->t.label, "IF") == 0){
@@ -1108,19 +1110,19 @@ varElement *interpreter(nodeType *now){
 				if (strcmp(now->nt.op[0]->nt.op[0]->t.label,"INTEGER") == 0){
 					r->t.type = intv;
 					r->t.intv = now->nt.op[0]->nt.op[0]->t.v_int;
-					printf("%d\n",r->t.intv);
+					//printf("%d\n",r->t.intv);
 					return r;
 				}
 				else if (strcmp(now->nt.op[0]->nt.op[0]->t.label,"REAL") == 0){
 					r->t.type = realv;
 					r->t.realv = now->nt.op[0]->nt.op[0]->t.v_real;
-					printf("%f\n",r->t.realv);
+					//printf("%f\n",r->t.realv);
 					return r;
 				}
 				fprintf(stdout, "error!\n");
 			}
 			else if (now->nt.op[0]->type == typeNonterminal && strcmp(now->nt.op[0]->nt.label, "lvalue") == 0)
-				return getlvalue(now);
+				return getlvalue(now->nt.op[0]);
 			else if (now->nt.op[0]->type == typeTerminal && (strcmp(now->nt.op[0]->nt.label, "(")) == 0)
 				return interpreter(now->nt.op[1]);
 			else if (now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->nt.label, "+") == 0){
@@ -1486,7 +1488,7 @@ varElement *interpreter(nodeType *now){
 			}
 			else if(now->nt.nops > 1 && now->nt.op[1]->type == typeNonterminal && strcmp(now->nt.op[1]->nt.label, "actual_params") == 0){
 				//call
-				fprintf(stdout, "call: %s\n", now->nt.op[0]->t.v_string);
+				//fprintf(stdout, "call: %s\n", now->nt.op[0]->t.v_string);
 				context *callContext = createContext(programContext, programContext->depth);
 				nodeType *callAddress = findProcedure(programContext, callContext, now->nt.op[0]->t.v_string);
 				//put actual params into callContext->varTable
