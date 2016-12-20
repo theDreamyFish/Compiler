@@ -691,7 +691,7 @@ varElement *findVar(context* con, char* x){
 		else
 			break;
 	}
-	fprintf(stdout, "no var\n");
+	fprintf(stdout, "no var: %s\n", x);
 	return returnNullVar();
 }
 
@@ -761,7 +761,7 @@ varElement *createAndCopy(varElement *svE){
 
 varElement *getlvalue(nodeType *now){//l-value := expr, get l-value's address and the do copyVarElement(l-vale, interpreter(expr))
     if (now->nt.nops == 1) { // if now -> ID
-        return findVar(programContext, now->nt.op[0]->t.label);
+        return findVar(programContext, now->nt.op[0]->t.v_id);
     } else if (now->nt.nops == 3) { // if now --> l-value . ID
         varElement *tmp = getlvalue(now->nt.op[0]);
         for (int i = 0; i < tmp->typev.nops; ++i) {
@@ -1037,12 +1037,153 @@ varElement *interpreter(nodeType *now){
 				}	
 				fprintf(stdout, "error!\n");
 			}
-			else if(now->nt.op[0]->type == typeNonterminal && strcmp(now->nt.op[0]->nt.label, "lvalue") == 0)
+			else if (now->nt.op[0]->type == typeNonterminal && strcmp(now->nt.op[0]->nt.label, "lvalue") == 0)
 				return getlvalue(now);
-			else if(now->nt.op[0]->type == typeTerminal && (strcmp(now->nt.op[0]->nt.label, "(") || strcmp(now->nt.op[0]->nt.label, "+")) == 0)
+			else if (now->nt.op[0]->type == typeTerminal && (strcmp(now->nt.op[0]->nt.label, "(")) == 0)
 				return interpreter(now->nt.op[1]);
+			else if (now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->nt.label, "+") == 0){
+				varElement *r = createAndCopy(interpreter(now->nt.op[1]));
+				if (r->t.type == intv || r->t.type == realv)
+					return r;
+				printf ("error!\n");
+				return returnNullVar();
+			}
+			else if (now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->nt.label, "-") == 0){
+				varElement *r = createAndCopy(interpreter(now->nt.op[1]));
+				if (r->t.type == intv){
+					r->t.intv = -r->t.intv;
+					return r;
+				}
+				else if (r->t.type == realv){
+					r->t.realv = -r->t.realv;
+					return r;
+				}
+				printf ("error!\n");
+				return returnNullVar();
+			}
+			else if (now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->nt.label, "NOT") == 0){
+				varElement *r = createAndCopy(interpreter(now->nt.op[1]));
+				if (r->t.type == boolv){
+					r->t.boolv = !(r->t.boolv);
+					return r;
+				}
+				printf ("error!\n");
+				return returnNullVar();
+			}
+			else if (now->nt.op[1]->type == typeTerminal && strcmp(now->nt.op[1]->nt.label, "+") == 0){
+				varElement *r1 = createAndCopy(interpreter(now->nt.op[0]));
+				varElement *r2 = createAndCopy(interpreter(now->nt.op[2]));
+				varElement *r = malloc(sizeof(varElement));
+				r->type = varv;
+				if(r1->t.type == intv && r2->t.type == intv){
+					r->t.type = intv;
+					r->t.intv = r1->t.intv + r2->t.intv;
+					return r;
+				}
+				else if(r1->t.type == realv && r2->t.type == intv){
+					r->t.type = realv;
+					r->t.realv = r1->t.realv + r2->t.intv;
+					return r;
+				}
+				else if(r1->t.type == intv && r2->t.type == realv){
+					r->t.type = realv;
+					r->t.realv = r1->t.intv + r2->t.realv;
+					return r;
+				}
+				else if(r1->t.type == realv && r2->t.type == realv){
+					r->t.type = realv;
+					r->t.realv = r1->t.realv + r2->t.realv;
+					return r;
+				}
+				printf ("error!\n");
+				return returnNullVar();
+			}
+			else if (now->nt.op[1]->type == typeTerminal && strcmp(now->nt.op[1]->nt.label, "-") == 0){
+				varElement *r1 = createAndCopy(interpreter(now->nt.op[0]));
+				varElement *r2 = createAndCopy(interpreter(now->nt.op[2]));
+				varElement *r = malloc(sizeof(varElement));
+				r->type = varv;
+				if(r1->t.type == intv && r2->t.type == intv){
+					r->t.type = intv;
+					r->t.intv = r1->t.intv - r2->t.intv;
+					return r;
+				}
+				else if(r1->t.type == realv && r2->t.type == intv){
+					r->t.type = realv;
+					r->t.realv = r1->t.realv - r2->t.intv;
+					return r;
+				}
+				else if(r1->t.type == intv && r2->t.type == realv){
+					r->t.type = realv;
+					r->t.realv = r1->t.intv - r2->t.realv;
+					return r;
+				}
+				else if(r1->t.type == realv && r2->t.type == realv){
+					r->t.type = realv;
+					r->t.realv = r1->t.realv - r2->t.realv;
+					return r;
+				}
+				printf ("error!\n");
+				return returnNullVar();
+			}
+			else if (now->nt.op[1]->type == typeTerminal && strcmp(now->nt.op[1]->nt.label, "*") == 0){
+				varElement *r1 = createAndCopy(interpreter(now->nt.op[0]));
+				varElement *r2 = createAndCopy(interpreter(now->nt.op[2]));
+				varElement *r = malloc(sizeof(varElement));
+				r->type = varv;
+				if(r1->t.type == intv && r2->t.type == intv){
+					r->t.type = intv;
+					r->t.intv = r1->t.intv * r2->t.intv;
+					return r;
+				}
+				else if(r1->t.type == realv && r2->t.type == intv){
+					r->t.type = realv;
+					r->t.realv = r1->t.realv * r2->t.intv;
+					return r;
+				}
+				else if(r1->t.type == intv && r2->t.type == realv){
+					r->t.type = realv;
+					r->t.realv = r1->t.intv * r2->t.realv;
+					return r;
+				}
+				else if(r1->t.type == realv && r2->t.type == realv){
+					r->t.type = realv;
+					r->t.realv = r1->t.realv * r2->t.realv;
+					return r;
+				}
+				printf ("error!\n");
+				return returnNullVar();
+			}
+			else if (now->nt.op[1]->type == typeTerminal && strcmp(now->nt.op[1]->nt.label, "/") == 0){
+				varElement *r1 = createAndCopy(interpreter(now->nt.op[0]));
+				varElement *r2 = createAndCopy(interpreter(now->nt.op[2]));
+				varElement *r = malloc(sizeof(varElement));
+				r->type = varv;
+				if(r1->t.type == intv && r2->t.type == intv){
+					r->t.type = intv;
+					r->t.intv = (1.0 * r1->t.intv) / (1.0 * r2->t.intv);
+					return r;
+				}
+				else if(r1->t.type == realv && r2->t.type == intv){
+					r->t.type = realv;
+					r->t.realv = r1->t.realv / (1.0 * r2->t.intv);
+					return r;
+				}
+				else if(r1->t.type == intv && r2->t.type == realv){
+					r->t.type = realv;
+					r->t.realv = (1.0 * r1->t.intv) / r2->t.realv;
+					return r;
+				}
+				else if(r1->t.type == realv && r2->t.type == realv){
+					r->t.type = realv;
+					r->t.realv = r1->t.realv / r2->t.realv;
+					return r;
+				}
+				printf ("error!\n");
+				return returnNullVar();
+			}
 			/*
-				unary& binary here
+				binary here
 			*/
 			else if(now->nt.nops > 1 && now->nt.op[1]->type == typeNonterminal && strcmp(now->nt.op[1]->nt.label, "actual_params") == 0){
 				//call
@@ -1061,6 +1202,8 @@ varElement *interpreter(nodeType *now){
 			return returnNullVar();
 		}
 	}
+	else
+		return returnNullVar();
 	fprintf(stdout, "error!\n");
 	return returnNullVar();
 }
