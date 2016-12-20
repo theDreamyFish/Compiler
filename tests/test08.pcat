@@ -2,11 +2,12 @@
 
 PROGRAM IS
     PROCEDURE FOO(X: INT; Y: REAL):REAL IS 
-      PROCEDURE BAR() IS BEGIN Y := X + 1.0; END;
-      BEGIN 
+    	PROCEDURE BAR() IS BEGIN Y := X + 1.0; END;
+    BEGIN 
         BAR();
-	RETURN Y;
-      END;
+		RETURN Y;
+    END;
+    
     VAR C : REAL := 0;
 BEGIN 
     C := FOO(3, 2.0);

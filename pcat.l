@@ -70,6 +70,17 @@ doubleop ":="|"<="|">="|"<>"|"[<"|">]"|\\
 		col_num += yyleng;
 		return REAL;
 	}
+(FALSE)|(TRUE) {
+		yylval.v_nptr = malloc(sizeof(nodeType));
+		yylval.v_nptr->type = typeTerminal;
+		yylval.v_nptr->t.label = strdup("BOOL");
+		if(strcmp("FALSE", yytext) == 0)
+			yylval.v_nptr->t.v_bool = 0;
+		else 
+			yylval.v_nptr->t.v_bool = 0;
+		col_num += yyleng;
+		return BBOOL;
+	}
 
 {reserved}	{
 		yylval.v_nptr = malloc(sizeof(nodeType));
