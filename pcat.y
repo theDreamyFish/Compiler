@@ -192,7 +192,7 @@ type:
 	|	RECORD component components END  {
 			$$ = combine("type", 4, $1, $2, $3, $4);
 		}
-	| RECORD error END {
+	| 	RECORD error END {
 			$$ = combine("type", 3, $1, new_node("error component"), $3);
 			yyerror("syntax error in component");
 		}
@@ -857,10 +857,33 @@ varElement *interpreter(nodeType *now){
 				if(strcmp(now->nt.op[i]->nt.label, "declaration") == 0){
 					interpreter(now->nt.op[i]);
 				}
+			/*for (int i = 0; i < programContext->varTableSize; i++){
+				if (programContext->varTable[i]->t.type == intv)
+					printf("%s: %d\n", programContext->varTable[i]->label, programContext->varTable[i]->t.intv);
+				if (programContext->varTable[i]->t.type == realv)
+					printf("%s: %f\n", programContext->varTable[i]->label, programContext->varTable[i]->t.realv);
+			}*/
 			return returnNullVar();
 		}
 		else if (strcmp(now->nt.label, "declaration") == 0){
-			// set var table here;
+			if(strcmp(now->nt.op[0]->t.label, "VAR") == 0){
+				now = now->nt.op[1];
+				for(int i = 1; i < now->nt.nops; i++){
+					nodeType *tempNow = now->nt.op[i];
+					varElement *r = interpreter(tempNow->nt.op[tempNow->nt.nops - 2]);
+					programContext->varTable[programContext->varTableSize] = createAndCopy(r);
+					programContext->varTable[programContext->varTableSize]->label = malloc(sizeof(char) * (strlen(tempNow->nt.op[0]->t.v_id)+1));
+					strcpy(programContext->varTable[programContext->varTableSize++]->label, tempNow->nt.op[0]->t.v_id);
+					if(tempNow->nt.op[1]->type == typeNonterminal){
+						tempNow = tempNow->nt.op[1];
+						for(int j = 2; j < tempNow->nt.nops; j += 2){
+							programContext->varTable[programContext->varTableSize] = createAndCopy(r);
+							programContext->varTable[programContext->varTableSize]->label = malloc(sizeof(char) * (strlen(tempNow->nt.op[j]->t.v_id)+1));
+							strcpy(programContext->varTable[programContext->varTableSize++]->label, tempNow->nt.op[j]->t.v_id);
+						}
+					}
+				}
+			}
 			return returnNullVar();
 		}
 		else if (strcmp(now->nt.label, "multi statement") == 0){
@@ -997,7 +1020,6 @@ varElement *interpreter(nodeType *now){
 			return getlvalue(now);
 		}
 		else if (strcmp(now->nt.label, "expression") == 0){
-			//fprintf(stdout, "call: %d\n", now->nt.nops);
 			if(now->nt.op[0]->type == typeNonterminal && strcmp(now->nt.op[0]->nt.label, "number") == 0){
 				varElement *r = malloc(sizeof(varElement));
 				r->type = varv;
@@ -1017,8 +1039,11 @@ varElement *interpreter(nodeType *now){
 			}
 			else if(now->nt.op[0]->type == typeNonterminal && strcmp(now->nt.op[0]->nt.label, "lvalue") == 0)
 				return getlvalue(now);
-			else if(now->nt.op[0]->type == typeTerminal && strcmp(now->nt.op[0]->nt.label, "(") == 0)
+			else if(now->nt.op[0]->type == typeTerminal && (strcmp(now->nt.op[0]->nt.label, "(") || strcmp(now->nt.op[0]->nt.label, "+")) == 0)
 				return interpreter(now->nt.op[1]);
+			/*
+				unary& binary here
+			*/
 			else if(now->nt.nops > 1 && now->nt.op[1]->type == typeNonterminal && strcmp(now->nt.op[1]->nt.label, "actual_params") == 0){
 				//call
 				fprintf(stdout, "call: %s\n", now->nt.op[0]->t.v_string);
@@ -1030,6 +1055,8 @@ varElement *interpreter(nodeType *now){
 				programContext = callContext;
 				return interpreter(callAddress->nt.op[i]); //returnVal
 			}
+			else if(now->nt.nops > 1 && now->nt.op[1]->type == typeNonterminal && (strcmp(now->nt.op[1]->nt.label, "array_values") == 0 || strcmp(now->nt.op[1]->nt.label, "omp_values") == 0))
+				return createVarElement(now);
 			fprintf(stdout, "error!\n");
 			return returnNullVar();
 		}
