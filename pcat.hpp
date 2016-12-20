@@ -5,6 +5,7 @@
 #define TABLESIZE 1000
 #define STACKDEPTH 100
 #define MAXFUCTIONSTACK 100
+#define VARELEMENTMAXLENGTH 20
 
 typedef enum {typeTerminal, typeNonterminal } nodeEnum;
 typedef enum {nullv, intv, realv, boolv, stringv, returnFlag, exitFlag} varEnum;
@@ -16,6 +17,7 @@ typedef struct {
 
 	union {
 		int v_int;
+		int v_bool;
 		float v_real;
 		char *v_string;
 		char *v_id; // this may be changed to integer value; (after constructing an id table)
@@ -45,9 +47,9 @@ typedef struct nodeTypeTag {
 typedef struct variable{
 	varEnum type;
 	union{
-		int nullv; 
+		int nullv;
 		int intv;
-		double realv;
+		float realv;
 		int boolv;
 		char *stringv;
 		int returnFlag;
@@ -63,12 +65,12 @@ typedef struct varElementStruct{
 		struct arrayVar {
 			//char *label; // type of array, may need
 			int nops;
-			struct varElementStruct *op[1];
+			struct varElementStruct *op[VARELEMENTMAXLENGTH];
 		} arrayv;
 		struct  typeVar {
 			int nops;
-			char *label[1]; //may have bugs need to be checked
-			struct varElementStruct *op[1];
+			char *label[VARELEMENTMAXLENGTH]; //may have bugs need to be checked
+			struct varElementStruct *op[VARELEMENTMAXLENGTH];
 		} typev;
 	};
 } varElement;
@@ -78,16 +80,17 @@ typedef struct {
 	nodeType *address;
 } nameElement;
 
-typedef struct contextStruct{ 
+typedef struct contextStruct{
 	struct contextStruct *callFrom;//for main(), callFrom = NULL
+	struct contextStruct *father;
 	nameElement typeTable[TABLESIZE];
 	nameElement procedureTable[TABLESIZE];
-	varElement varTable[TABLESIZE];
+	varElement *varTable[TABLESIZE];
 	int typeTableSize;
 	int procedureTableSize;
 	int varTableSize;
 	int depth;
-	var returnValue;
+	varElement *returnValue;
 } context;
 
 int line_num;
