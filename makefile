@@ -15,7 +15,7 @@ lex.yy.c: 		pcat.l pcat.hpp pcat.tab.h
 							$(LEX) pcat.l
 
 compiler: 		pcat.tab.c lex.yy.c pcat.hpp 
-							$(GCC) *.c -o compiler
+							$(GCC) *.c -std=c99 -o compiler
 
 clean: 
 							rm -f *.h *.gch *.c compiler *.output
