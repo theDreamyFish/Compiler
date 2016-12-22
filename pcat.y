@@ -1076,9 +1076,9 @@ varElement *interpreter(nodeType *now){
                     fprintf(stdout, "[< param length doesn't match >]");
                 } else {
                     for (int i = 0; i < param_names_len; ++i) {
-                        programContext->varTable[programContext->varTableSize] = createAndCopy(param_vals[i]);
-                        programContext->varTable[programContext->varTableSize]->label = strdup(param_names[i]);
-                        programContext->varTableSize += 1;
+                        callContext->varTable[callContext->varTableSize] = createAndCopy(param_vals[i]);
+                        callContext->varTable[callContext->varTableSize]->label = strdup(param_names[i]);
+                        callContext->varTableSize += 1;
                     }
                 }
 
@@ -1105,8 +1105,8 @@ varElement *interpreter(nodeType *now){
 					if(procedureIsTrue->t.type == returnFlag || procedureIsTrue->t.type == exitFlag)
 						return procedureIsTrue;
 				}
-				else if(now->nt.nops > 4 && strcmp(now->nt.op[4]->t.label, "ELSE") == 0){
-					procedureIsTrue = createAndCopy(interpreter(now->nt.op[4]));
+				else if(now->nt.nops > 5 && now->nt.op[5]->type == typeTerminal && strcmp(now->nt.op[5]->t.label, "ELSE") == 0){
+					procedureIsTrue = createAndCopy(interpreter(now->nt.op[6]));
 					if(procedureIsTrue->t.type == returnFlag || procedureIsTrue->t.type == exitFlag)
 						return procedureIsTrue;
 				}
@@ -1597,9 +1597,9 @@ varElement *interpreter(nodeType *now){
                     fprintf(stdout, "[< param length doesn't match >]");
                 } else {
                     for (int i = 0; i < param_names_len; ++i) {
-                        programContext->varTable[programContext->varTableSize] = createAndCopy(param_vals[i]);
-                        programContext->varTable[programContext->varTableSize]->label = strdup(param_names[i]);
-                        programContext->varTableSize += 1;
+                        callContext->varTable[callContext->varTableSize] = createAndCopy(param_vals[i]);
+                        callContext->varTable[callContext->varTableSize]->label = strdup(param_names[i]);
+                        callContext->varTableSize += 1;
                     }
                 }
 
